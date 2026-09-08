@@ -125,8 +125,10 @@ no només a l'UI de Directus, perquè quedi versionat.
   Directus prefixa els endpoints pel nom de l'extensió). Codi únic amb TTL curt, guardat com a HASH a
   `auth_otps`; s'emet un JWT de Directus. Rols POLSER interns: contrasenya + 2FA.
 - **RBAC (§4):** seed idempotent a `extensions/rbac` (rols `partner`/`POLSER_cpso`/`POLSER_admin`/`POLSER_ceo`
-  + policies + permisos a l'arrencada). Aïllament per partner dels referits = F4 (cal camp `partner` a
-  `directus_users` + filtre `$CURRENT_USER.partner`).
+  + policies + permisos a l'arrencada). ⚠️ Directus 12 lliure té les **custom permission rules**
+  (filtres/camps/presets) gated per llicència → només es creen permisos senzills. Per això l'aïllament
+  per partner i l'ocultació de dades personals viuen a l'extensió **`/portal/*`** (`extensions/portal`),
+  que escopeix per `directus_users.partner` (migració 04 + hook `extensions/partners`).
 - **Notificacions on-demand (§6.4.1):** col·lecció `notifications`; in-app via Directus Realtime +
   push PWA via Web Push (VAPID), l'enviament el fa n8n.
 - **Sync Odoo (§6.3):** intercanvi de dades per events, orquestrat amb n8n; idempotència per `odo_opportunity_id`;
@@ -148,8 +150,9 @@ no només a l'UI de Directus, perquè quedi versionat.
   (directus_users.partner).
 - **F2 — RBAC:** hook `extensions/rbac` (rols/policies/permisos idempotent a l'arrencada).
 - **F3 — Auth OTP:** extensió `extensions/auth-otp` + guard de sessió al router del portal.
-- **F4 — Portal lligat a l'API real** (`/items/*`): aïllament per partner via `directus_users.partner`
-  (hook `extensions/partners` + permisos `$CURRENT_USER.partner`). Portal React compilat i verificat.
+- **F4 — Portal lligat a l'API real** (`/portal/*`): extensió `extensions/portal` amb aïllament
+  per partner server-side (`directus_users.partner` via hook `extensions/partners` + migració 04).
+  Portal React compilat i verificat.
 
 **Pendents (per ordre del plan §8):**
 - F5: motor de comissions (Flows/extensió) + sync Odoo amb n8n.

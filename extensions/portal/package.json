@@ -1,5 +1,5 @@
 {
-  "name": "directus-extension-auth-otp",
+  "name": "directus-endpoint-portal",
   "version": "0.1.0",
   "private": true,
   "type": "commonjs",
@@ -14,8 +14,7 @@
     "dev": "esbuild src/index.ts --bundle --format=cjs --platform=node --target=node20 --outfile=dist/index.js --watch"
   },
   "dependencies": {
-    "@directus/errors": "^2.5.1",
-    "jsonwebtoken": "^9.0.2"
+    "@directus/errors": "^2.5.1"
   },
   "devDependencies": {
     "esbuild": "^0.21.5"

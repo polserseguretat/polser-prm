@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getMe, getPartnerOrg, type Me, type PartnerOrg } from '../lib/api';
+import { getPortalMe, type PartnerOrg } from '../lib/api';
 import { clearToken } from '../lib/session';
 
 const FALLBACK_ORG: PartnerOrg = {
@@ -38,7 +38,7 @@ const STATUS_LABEL: Record<string, string> = {
 export default function Profile() {
   const navigate = useNavigate();
   const [org, setOrg] = useState<PartnerOrg>(FALLBACK_ORG);
-  const [me, setMe] = useState<Me | null>(null);
+  const [email, setEmail] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
   const logout = () => {
@@ -48,12 +48,16 @@ export default function Profile() {
 
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getMe(), getPartnerOrg()]).then(([m, o]) => {
-      if (!active) return;
-      if (m.status === 'fulfilled') setMe(m.value.data ?? null);
-      if (o.status === 'fulfilled' && o.value.data?.length) setOrg(o.value.data[0]);
-      setLoading(false);
-    });
+    getPortalMe()
+      .then((res) => {
+        if (!active || !res.data) return;
+        setOrg(res.data.partner ?? FALLBACK_ORG);
+        setEmail(res.data.user.email);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -63,7 +67,7 @@ export default function Profile() {
     ['Perfil', PROFILE_LABEL[org.profile] ?? org.profile],
     ['Tipus', TYPE_LABEL[org.type] ?? org.type],
     ['NIF / DNI', org.nif ?? undefined],
-    ['Correu electrònic', me?.email ?? org.email ?? undefined],
+    ['Correu electrònic', email ?? org.email ?? undefined],
     ['Telèfon', org.phone ?? undefined],
     ['Adreça', org.address ?? undefined],
     ['Estat', org.status ? STATUS_LABEL[org.status] ?? org.status : undefined],

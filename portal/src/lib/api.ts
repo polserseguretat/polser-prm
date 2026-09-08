@@ -207,53 +207,52 @@ export function loginVerifyOtp(email: string, code: string): Promise<AuthResult>
 }
 
 export function getServices(): Promise<{ data: Service[] }> {
-  return request<{ data: Service[] }>('/items/services?filter[active][_eq]=true&sort=name');
+  return request<{ data: Service[] }>('/portal/services');
 }
 
 export function getReferrals(): Promise<{ data: Referral[] }> {
-  return request<{ data: Referral[] }>('/items/referrals?sort=-created_at&limit=-1');
+  return request<{ data: Referral[] }>('/portal/referrals');
 }
 
 export function getReferral(id: string | number): Promise<{ data: Referral }> {
-  return request<{ data: Referral }>(`/items/referrals/${id}`);
+  return request<{ data: Referral }>(`/portal/referrals/${id}`);
 }
 
 export function getReferralEvents(id: string | number): Promise<{ data: ReferralEvent[] }> {
-  return request<{ data: ReferralEvent[] }>(
-    `/items/referral_events?filter[referral][_eq]=${encodeURIComponent(String(id))}&sort=created_at`,
-  );
+  return request<{ data: ReferralEvent[] }>(`/portal/referrals/${id}/events`);
 }
 
 export function createReferral(payload: ReferralPayload): Promise<{ data: Referral }> {
-  return request<{ data: Referral }>('/items/referrals', {
+  return request<{ data: Referral }>('/portal/referrals', {
     method: 'POST',
-    body: { ...payload, source: 'portal' },
+    body: payload,
   });
 }
 
 export function getWalletLedger(): Promise<{ data: WalletEntry[] }> {
-  return request<{ data: WalletEntry[] }>('/items/wallet_ledger?sort=-created_at&limit=-1');
+  return request<{ data: WalletEntry[] }>('/portal/wallet');
 }
 
 export function createPayout(amount: number): Promise<{ data: { id: string } }> {
-  return request<{ data: { id: string } }>('/items/payouts', {
+  return request<{ data: { id: string } }>('/portal/payouts', {
     method: 'POST',
     body: { amount },
   });
 }
 
 export function getMaterials(): Promise<{ data: DocumentItem[] }> {
-  return request<{ data: DocumentItem[] }>('/items/documents?filter[published][_eq]=true&sort=-updated_at');
+  return request<{ data: DocumentItem[] }>('/portal/documents');
 }
 
 export function getNotifications(): Promise<{ data: NotificationItem[] }> {
-  return request<{ data: NotificationItem[] }>('/items/notifications?sort=-created_at');
+  return request<{ data: NotificationItem[] }>('/portal/notifications');
 }
 
-export function getMe(): Promise<{ data: Me }> {
-  return request<{ data: Me }>('/users/me?fields=id,email,first_name,last_name,partner');
+export interface PortalMe {
+  user: { id: string; email: string; role: string };
+  partner: PartnerOrg;
 }
 
-export function getPartnerOrg(): Promise<{ data: PartnerOrg[] }> {
-  return request<{ data: PartnerOrg[] }>('/items/partners?limit=1');
+export function getPortalMe(): Promise<{ data: PortalMe }> {
+  return request<{ data: PortalMe }>('/portal/me');
 }

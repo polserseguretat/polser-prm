@@ -3,12 +3,18 @@
  *
  * Idempotent: a cada arrencada comprova si ja existeixen rols/policies/permisos
  * i només crea els que falten. Els rols:
- *   - partner       : self-service de la SEVA organització (aïllament per
- *                     $CURRENT_USER.partner; requereix camp `partner` a
- *                     directus_users, migració 04 + hook partners)
+ *   - partner       : sense permisos /items directes; tota la seva data passa
+ *                     per l'extensió /portal/* (aïllament server-side per
+ *                     directus_users.partner). Requereix camp `partner` a
+ *                     directus_users (migració 04 + hook partners).
  *   - POLSER_cpso   : CRUD de partners, referits, interaccions, documents, etc.
  *   - POLSER_admin  : CRUD de tot el domini EXCEPTE commission_rules
  *   - POLSER_ceo    : l'únic que pot escriure commission_rules (i reversals)
+ *
+ * NOTA (licència): Directus 12 (versió lliure) té les "custom permission rules"
+ * (filtres, camps restringits, presets) gated per llicència. Per això NOMÉS es
+ * creen permisos senzills (action + collection + fields ['*']). L'aïllament per
+ * partner i l'ocultació de dades personals es fan a l'extensió /portal/*.
  */
 
 const COLLECTIONS = [
@@ -98,61 +104,9 @@ export default ({ init, action }: any, { services, database, getSchema, logger }
       const permSet = new Set(existingPerms.map((p) => `${p.policy}:${p.collection}:${p.action}`));
 
       const permissionDefs: Array<Record<string, unknown>> = [
-        // ---- partner: catàleg + materials publicats (portal) ----
+        // ---- partner: catàleg + fitxers per baixar materials; la resta passa per /portal/* ----
         { policy: 'partner', collection: 'services', action: 'read', fields: ['*'] },
-        {
-          policy: 'partner',
-          collection: 'documents',
-          action: 'read',
-          fields: ['*'],
-          permissions: { published: { _eq: true } },
-        },
-        // partner: fitxers (per baixar materials)
         { policy: 'partner', collection: 'directus_files', action: 'read', fields: ['*'] },
-        // partner: crear referits (camps de client) amb partner = el seu
-        {
-          policy: 'partner',
-          collection: 'referrals',
-          action: 'create',
-          fields: ['client_name', 'client_phone', 'client_email', 'client_address', 'service', 'service_type', 'notes', 'source'],
-          presets: { partner: '$CURRENT_USER.partner' },
-        },
-        // partner: llegir NOMÉS els seus referits, sense dades personals del client (RGPD)
-        {
-          policy: 'partner',
-          collection: 'referrals',
-          action: 'read',
-          fields: ['id', 'partner', 'referral_code', 'service', 'service_type', 'status', 'stage_date', 'estimated_value', 'source', 'created_at', 'updated_at'],
-          permissions: { partner: { _eq: '$CURRENT_USER.partner' } },
-        },
-        // partner: timeline dels seus referits (sense dades personals)
-        {
-          policy: 'partner',
-          collection: 'referral_events',
-          action: 'read',
-          fields: ['id', 'from_status', 'to_status', 'reason', 'lost_reason', 'created_at'],
-          permissions: { referral: { partner: { _eq: '$CURRENT_USER.partner' } } },
-        },
-        // partner: cartera pròpia
-        {
-          policy: 'partner',
-          collection: 'wallet_ledger',
-          action: 'read',
-          fields: ['id', 'type', 'amount', 'period', 'status', 'description', 'created_at'],
-          permissions: { partner: { _eq: '$CURRENT_USER.partner' } },
-        },
-        // partner: la seva pròpia organització (perfil)
-        {
-          policy: 'partner',
-          collection: 'partners',
-          action: 'read',
-          fields: ['id', 'name', 'profile', 'type', 'nif', 'email', 'phone', 'address', 'status'],
-          permissions: { id: { _eq: '$CURRENT_USER.partner' } },
-        },
-        // partner: notificacions (broadcast)
-        { policy: 'partner', collection: 'notifications', action: 'read', fields: ['id', 'title', 'body', 'image', 'created_at'] },
-        // partner: sol·licitar retirada (preset amb el seu partner)
-        { policy: 'partner', collection: 'payouts', action: 'create', fields: ['amount'], presets: { partner: '$CURRENT_USER.partner' } },
         // ---- cpso: operativa comercial ----
         ...allCollectionsPermissions('POLSER_cpso', CP_SO_COLLECTIONS),
         { policy: 'POLSER_cpso', collection: 'wallet_ledger', action: 'read', fields: ['*'] },

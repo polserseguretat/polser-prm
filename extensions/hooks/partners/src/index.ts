@@ -22,7 +22,7 @@ export default ({ init, action }: any, { database, logger }: any) => {
     await database('directus_users').where('id', userId).update({ partner: row ? row.partner : null });
   };
 
-  init('server.start', async () => {
+  init('routes.after', async () => {
     try {
       const members: Array<{ user: string; partner: string }> = await database('partner_members').select('user', 'partner');
       for (const m of members) {

@@ -232,7 +232,7 @@ CREATE TABLE notification_deliveries (
     "user"         uuid NOT NULL,             -- fk directus_users
     delivered_at timestamptz,
     read_at      timestamptz,
-    UNIQUE (notification, user)
+    UNIQUE (notification, "user")
 );
 
 -- Auditoria de sincronització amb Odoo (§6.3)

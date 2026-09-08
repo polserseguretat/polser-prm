@@ -41,8 +41,8 @@ function allCollectionsPermissions(policy: string, collections: string[]): Array
 
 const CP_SO_COLLECTIONS = ['partners', 'referrals', 'interactions', 'referral_events', 'documents'];
 
-export default ({ init }: any, { services, database, getSchema, logger }: any) => {
-  init('server.start', async () => {
+export default ({ init, action }: any, { services, database, getSchema, logger }: any) => {
+  init('routes.after', async () => {
     try {
       const schema = await getSchema();
       const opts = { schema, knex: database, accountability: { admin: true } };

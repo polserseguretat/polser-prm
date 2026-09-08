@@ -17,6 +17,7 @@ portal/vite.config.d.ts
 # dades locals contenidors
 pgdata/
 directus/uploads/
+opencode.json
 
 # sistemes
 .DS_Store

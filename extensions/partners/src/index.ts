@@ -3,8 +3,8 @@
  *
  * Necessita la migració 04 (camp `partner` a directus_users). A l'arrencada
  * fa un backfill i manté el valor en sync quan es creen/modifiquen/eliminen
- * vincles de partner_members. Això permet als permisos filtrar per
- * `$CURRENT_USER.partner`.
+ * vincles de partner_members. El valor s'usa a l'extensió /portal/* per a
+ * l'aïllament per partner.
  */
 
 export default ({ init, action }: any, { database, logger }: any) => {
@@ -35,20 +35,28 @@ export default ({ init, action }: any, { database, logger }: any) => {
     }
   });
 
-  action('partner_members.create', async (meta: any) => {
-    const item = await database('partner_members').where('id', meta.key).first();
-    if (item) await syncUser(item.user);
-  });
-
-  action('partner_members.update', async (meta: any) => {
-    const keys = Array.isArray(meta.keys) ? meta.keys : [meta.key];
-    for (const key of keys) {
-      const item = await database('partner_members').where('id', key).first();
+  action('partner_members.items.create', async (meta: any) => {
+    try {
+      const item = await database('partner_members').where('id', meta.key).first();
       if (item) await syncUser(item.user);
+    } catch (err) {
+      logger.error(`[partners] error en create: ${(err as Error).message}`);
     }
   });
 
-  action('partner_members.delete', async () => {
+  action('partner_members.items.update', async (meta: any) => {
+    try {
+      const keys = Array.isArray(meta.keys) ? meta.keys : [meta.key];
+      for (const key of keys) {
+        const item = await database('partner_members').where('id', key).first();
+        if (item) await syncUser(item.user);
+      }
+    } catch (err) {
+      logger.error(`[partners] error en update: ${(err as Error).message}`);
+    }
+  });
+
+  action('partner_members.items.delete', async () => {
     try {
       await clearUsersWithoutPartner();
     } catch (err) {

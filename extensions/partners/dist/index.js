@@ -22,18 +22,26 @@ var src_default = ({ init, action }, { database, logger }) => {
       logger.error(`[partners] error sincronitzant directus_users.partner: ${err.message}`);
     }
   });
-  action("partner_members.create", async (meta) => {
-    const item = await database("partner_members").where("id", meta.key).first();
-    if (item) await syncUser(item.user);
-  });
-  action("partner_members.update", async (meta) => {
-    const keys = Array.isArray(meta.keys) ? meta.keys : [meta.key];
-    for (const key of keys) {
-      const item = await database("partner_members").where("id", key).first();
+  action("partner_members.items.create", async (meta) => {
+    try {
+      const item = await database("partner_members").where("id", meta.key).first();
       if (item) await syncUser(item.user);
+    } catch (err) {
+      logger.error(`[partners] error en create: ${err.message}`);
     }
   });
-  action("partner_members.delete", async () => {
+  action("partner_members.items.update", async (meta) => {
+    try {
+      const keys = Array.isArray(meta.keys) ? meta.keys : [meta.key];
+      for (const key of keys) {
+        const item = await database("partner_members").where("id", key).first();
+        if (item) await syncUser(item.user);
+      }
+    } catch (err) {
+      logger.error(`[partners] error en update: ${err.message}`);
+    }
+  });
+  action("partner_members.items.delete", async () => {
     try {
       await clearUsersWithoutPartner();
     } catch (err) {

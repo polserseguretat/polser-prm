@@ -1,0 +1,91 @@
+# =====================================================================
+# PRM POLSER — Stack: Directus (PostgreSQL) + Portal React PWA + Caddy
+# Infra base (F1). n8n i Odoo es mantenen externs (s'integren per API).
+# Ús:  cp .env.example .env  ->  omplir  ->  docker compose up -d
+# =====================================================================
+name: prm-polser
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: prm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  directus:
+    image: directus/directus:12.3.1
+    container_name: prm-directus
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Manu d'instància (Directus)
+      KEY: "${DIRECTUS_KEY}"
+      SECRET: "${DIRECTUS_SECRET}"
+      ADMIN_EMAIL: "${DIRECTUS_ADMIN_EMAIL}"
+      ADMIN_PASSWORD: "${DIRECTUS_ADMIN_PASSWORD}"
+      # Base de dades (PostgreSQL del PRM)
+      DB_CLIENT: pg
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: "${POSTGRES_DB}"
+      DB_USER: "${POSTGRES_USER}"
+      DB_PASSWORD: "${POSTGRES_PASSWORD}"
+      # Publicació i CORS (portal React)
+      PUBLIC_URL: "${PUBLIC_URL}"
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "${CORS_ORIGIN}"
+    ports:
+      - "8055:8055"
+    volumes:
+      - uploads:/directus/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8055/server/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  caddy:
+    image: caddy:2
+    container_name: prm-caddy
+    restart: unless-stopped
+    depends_on:
+      directus:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      # Domini públic del portal de partners (ex.: partners.polser.cat)
+      CADDY_SITE_NAME: "${CADDY_SITE_NAME}"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./portal/dist:/srv/portal
+      - caddy_data:/data
+      - caddy_config:/config
+
+# =====================================================================
+# Estructura del repo
+#   schema/   -> DDL + seed (migracions bàsiques)
+#   portal/   -> app React PWA (build -> portal/dist, servida per Caddy)
+#   Caddyfile -> proxy TLS (portal + /directus)
+# =====================================================================
+
+volumes:
+  pgdata:
+  uploads:
+  caddy_data:
+  caddy_config:

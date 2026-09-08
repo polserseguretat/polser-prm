@@ -1,0 +1,18 @@
+# secrets
+.env
+*.env.local
+
+# node / build
+node_modules/
+portal/dist/
+portal/node_modules/
+
+# dades locals contenidors
+pgdata/
+directus/uploads/
+caddy_data/
+caddy_config/
+
+# sistemes
+.DS_Store
+*.log

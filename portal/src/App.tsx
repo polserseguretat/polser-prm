@@ -1,0 +1,24 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
+import Referrals from './pages/Referrals';
+import ReferralNew from './pages/ReferralNew';
+import ReferralDetail from './pages/ReferralDetail';
+import Wallet from './pages/Wallet';
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route element={<Layout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/referrals" element={<Referrals />} />
+        <Route path="/referrals/new" element={<ReferralNew />} />
+        <Route path="/referrals/:id" element={<ReferralDetail />} />
+        <Route path="/wallet" element={<Wallet />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

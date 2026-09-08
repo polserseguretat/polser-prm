@@ -31,6 +31,14 @@ services:
       PUBLIC_URL: "${PUBLIC_URL}"
       CORS_ENABLED: "true"
       CORS_ORIGIN: "${CORS_ORIGIN}"
+      # SMTP (enviament d'emails, ex. codis OTP del login)
+      EMAIL_FROM: "${EMAIL_FROM}"
+      EMAIL_TRANSPORT: "${EMAIL_TRANSPORT:-smtp}"
+      EMAIL_SMTP_HOST: "${EMAIL_SMTP_HOST}"
+      EMAIL_SMTP_PORT: "${EMAIL_SMTP_PORT:-587}"
+      EMAIL_SMTP_SECURE: "${EMAIL_SMTP_SECURE:-false}"
+      EMAIL_SMTP_USER: "${EMAIL_SMTP_USER}"
+      EMAIL_SMTP_PASSWORD: "${EMAIL_SMTP_PASSWORD}"
       # Extensions (F3 auth-otp). Recarrega automàticament al canviar ./extensions.
       EXTENSIONS_AUTO_RELOAD: "true"
     ports:

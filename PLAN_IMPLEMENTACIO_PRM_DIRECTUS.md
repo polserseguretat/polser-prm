@@ -469,7 +469,7 @@ que la facturación refleje la oportunidad real y dé base a la comisión recurr
   3. El partner introdueix el codi → es verifica (hash + TTL + un sol ús) → s'emet la sessió.
 - **Sessió llarga "màxim possible":** token de refresc llarg **≈ 1 mes (sliding)**, re-emès amb activitat; token d'accés curt. Revocable pel servidor (admin pot tancar totes les sessions d'un partner).
 - **Seguretat mínima:** rate-limit de sol·licituds OTP (ex. 5/h per email), bloqueig temporal per intents fallits, codi single-use amb TTL curt, registre d'intents; **re-OTP només per a accions sensibles** (ex. cartera, si es configura).
-- **Implementació:** extensió Directus `extensions/endpoints/auth-otp` (rutes `POST /auth-otp/request-otp`
+- **Implementació:** extensió Directus `extensions/auth-otp` (rutes `POST /auth-otp/request-otp`
   i `POST /auth-otp/verify-otp`; Directus prefixa els endpoints pel nom de l'extensió); emmagatzematge de
   codis a `auth_otps` (hash + expiració); s'emet un JWT de Directus. Els usuaris de rol `partner` no necessiten
   contrasenya; els rols POLSER interns mantenen contrasenya + 2FA.

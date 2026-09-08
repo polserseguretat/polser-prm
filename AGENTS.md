@@ -121,10 +121,10 @@ no només a l'UI de Directus, perquè quedi versionat.
 ## 7. Backend i integracions (apunts per a l'agent)
 
 - **Auth partners:** login sense contrasenya **email OTP** (§6.6 del plan). Endpoints
-  `POST /auth-otp/request-otp` i `POST /auth-otp/verify-otp` (extensió `extensions/endpoints/auth-otp`;
+  `POST /auth-otp/request-otp` i `POST /auth-otp/verify-otp` (extensió `extensions/auth-otp`;
   Directus prefixa els endpoints pel nom de l'extensió). Codi únic amb TTL curt, guardat com a HASH a
   `auth_otps`; s'emet un JWT de Directus. Rols POLSER interns: contrasenya + 2FA.
-- **RBAC (§4):** seed idempotent a `extensions/hooks/rbac` (rols `partner`/`POLSER_cpso`/`POLSER_admin`/`POLSER_ceo`
+- **RBAC (§4):** seed idempotent a `extensions/rbac` (rols `partner`/`POLSER_cpso`/`POLSER_admin`/`POLSER_ceo`
   + policies + permisos a l'arrencada). Aïllament per partner dels referits = F4 (cal camp `partner` a
   `directus_users` + filtre `$CURRENT_USER.partner`).
 - **Notificacions on-demand (§6.4.1):** col·lecció `notifications`; in-app via Directus Realtime +
@@ -146,10 +146,10 @@ no només a l'UI de Directus, perquè quedi versionat.
   i API Directus a l'arrel d'`api.partners.polser.cat` per **Cloudflare Tunnel** (`cloudflared`).
 - Esquema SQL complet (§3) + seed de serveis. Migracions: `03` (auth_otps.created_at), `04`
   (directus_users.partner).
-- **F2 — RBAC:** hook `extensions/hooks/rbac` (rols/policies/permisos idempotent a l'arrencada).
-- **F3 — Auth OTP:** extensió `extensions/endpoints/auth-otp` + guard de sessió al router del portal.
+- **F2 — RBAC:** hook `extensions/rbac` (rols/policies/permisos idempotent a l'arrencada).
+- **F3 — Auth OTP:** extensió `extensions/auth-otp` + guard de sessió al router del portal.
 - **F4 — Portal lligat a l'API real** (`/items/*`): aïllament per partner via `directus_users.partner`
-  (hook `extensions/hooks/partners` + permisos `$CURRENT_USER.partner`). Portal React compilat i verificat.
+  (hook `extensions/partners` + permisos `$CURRENT_USER.partner`). Portal React compilat i verificat.
 
 **Pendents (per ordre del plan §8):**
 - F5: motor de comissions (Flows/extensió) + sync Odoo amb n8n.

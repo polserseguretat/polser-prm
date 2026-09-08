@@ -10,7 +10,7 @@ var src_default = ({ init, action }, { database, logger }) => {
     const row = await database("partner_members").select("partner").whereRaw('"user" = ?', [userId]).first();
     await database("directus_users").where("id", userId).update({ partner: row ? row.partner : null });
   };
-  init("server.start", async () => {
+  init("routes.after", async () => {
     try {
       const members = await database("partner_members").select("user", "partner");
       for (const m of members) {

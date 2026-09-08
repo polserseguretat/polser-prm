@@ -25,8 +25,8 @@ function allCollectionsPermissions(policy, collections) {
   return perms;
 }
 var CP_SO_COLLECTIONS = ["partners", "referrals", "interactions", "referral_events", "documents"];
-var src_default = ({ init }, { services, database, getSchema, logger }) => {
-  init("server.start", async () => {
+var src_default = ({ init, action }, { services, database, getSchema, logger }) => {
+  init("routes.after", async () => {
     try {
       const schema = await getSchema();
       const opts = { schema, knex: database, accountability: { admin: true } };

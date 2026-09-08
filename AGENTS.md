@@ -133,6 +133,12 @@ no només a l'UI de Directus, perquè quedi versionat.
   push PWA via Web Push (VAPID), l'enviament el fa n8n.
 - **Sync Odoo (§6.3):** intercanvi de dades per events, orquestrat amb n8n; idempotència per `odo_opportunity_id`;
   registre a `odoo_sync_log` i re-emissió d'operacions fallides.
+- **Motor d'automatitzacions (decisió 09/09/2026):** la lògica de negoci s'orquestra amb **n8n**, no amb
+  Directus Flows (llicència free limitada). El disparador d'events es fa amb **PostgreSQL LISTEN/NOTIFY**
+  (migració 07): el trigger `trg_referral_notify` emet el canal `prm_referral_changes` a cada INSERT a
+  `referrals`; n8n (nodo Postgres Trigger) hi escolta i executa la lògica (alta immediata → `crm.lead` a Odoo).
+  El payload del NOTIFY porta només `id` + `referral_code` (mai dades personals). n8n només LLEGEIX la BD
+  (LISTEN/polling); totes les ESCRIPTURES es fan per la API de Directus amb el token tècnic (rol `POLSER_admin`).
 - **RBAC (§4):** rols Directus `partner` / `POLSER_cpso` / `POLSER_admin` / `POLSER_ceo`.
   `POLSER_ceo` és l'ÚNIC que pot escriure `commission_rules` / comissions especials.
 - El portal fa `fetch` cap a `import.meta.env.VITE_DIRECTUS_URL` (`portal/src/lib/api.ts`).

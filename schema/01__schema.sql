@@ -34,7 +34,7 @@ CREATE TYPE int_outcome      AS ENUM ('positive','neutral','negative','pending')
 CREATE TYPE notif_audience   AS ENUM ('all','afiliats','colaboradors');
 CREATE TYPE notif_channel    AS ENUM ('inapp','push','both');
 CREATE TYPE notif_status     AS ENUM ('draft','queued','sent','failed');
-CREATE TYPE sync_action      AS ENUM ('create_customer','create_sale','update_sale_status','read_subscription','create_vendor_bill');
+CREATE TYPE sync_action      AS ENUM ('create_customer','create_sale','update_sale_status','read_subscription','create_vendor_bill','create_opportunity');
 CREATE TYPE source_entity    AS ENUM ('referral','partner','payout');
 
 -- =====================================================================

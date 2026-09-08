@@ -1,24 +1,28 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Link, Outlet } from 'react-router-dom';
+import { HomeIcon, ListIcon, WalletIcon, BellIcon, UserIcon } from './Icons';
 
 const tabs = [
-  { to: '/', label: 'Inici', end: true },
-  { to: '/referrals', label: 'Els meus referits' },
-  { to: '/wallet', label: 'Cartera' },
+  { to: '/', label: 'Inici', end: true, Icon: HomeIcon },
+  { to: '/referrals', label: 'Referits', end: false, Icon: ListIcon },
+  { to: '/wallet', label: 'Cartera', end: false, Icon: WalletIcon },
 ];
 
 export default function Layout() {
   return (
     <div className="app-shell">
-      {/* Sidebar / capçalera per a escriptori */}
-      <nav className="topnav">
-        <div className="brand">
-          <span className="brand-logo">P</span>
-          <div className="brand-text">
+      {/* Capçalera (mòbil i escriptori) */}
+      <header className="topnav">
+        <Link className="brand" to="/" aria-label="Inici">
+          <span className="brand-logo" aria-hidden="true">
+            P
+          </span>
+          <span className="brand-text">
             <strong>POLSER SEGURETAT</strong>
             <span>Portal de Partners</span>
-          </div>
-        </div>
-        <div className="topnav-links">
+          </span>
+        </Link>
+
+        <nav className="topnav-links" aria-label="Navegació principal">
           {tabs.map((tab) => (
             <NavLink
               key={tab.to}
@@ -29,15 +33,29 @@ export default function Layout() {
               {tab.label}
             </NavLink>
           ))}
+        </nav>
+
+        <div className="topnav-actions">
+          <NavLink
+            to="/notifications"
+            className="icon-btn"
+            aria-label="Notificacions"
+            title="Notificacions"
+          >
+            <BellIcon />
+          </NavLink>
+          <NavLink to="/profile" className="icon-btn" aria-label="El meu perfil" title="El meu perfil">
+            <UserIcon />
+          </NavLink>
         </div>
-      </nav>
+      </header>
 
       <main className="page">
         <Outlet />
       </main>
 
       {/* Barra de navegació inferior fixa (mòbil) */}
-      <nav className="bottomnav">
+      <nav className="bottomnav" aria-label="Navegació principal">
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
@@ -45,7 +63,8 @@ export default function Layout() {
             end={tab.end}
             className={({ isActive }) => (isActive ? 'bottomnav-item active' : 'bottomnav-item')}
           >
-            {tab.label}
+            <tab.Icon size={22} />
+            <span>{tab.label}</span>
           </NavLink>
         ))}
       </nav>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getServices, getReferrals, getWalletLedger, type Service, type Referral, type WalletEntry } from '../lib/api';
+import { FileIcon, ChevronRightIcon } from '../components/Icons';
 
 const FALLBACK_SERVICES: Service[] = [
   { id: 'demo-alarma', code: 'pis', name: 'Alarma per a la llar', category: 'alarma', sector: 'residencial', alta_fee: 599, monthly_fee: 27.99, iva_included: true, details: null, active: true },
@@ -92,6 +93,19 @@ export default function Dashboard() {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section className="section">
+            <Link className="quick-card" to="/materials">
+              <span className="quick-card-icon" aria-hidden="true">
+                <FileIcon />
+              </span>
+              <span className="quick-card-text">
+                <strong>Materials i recursos</strong>
+                <span>Contractes, manuals i documents per a la vostra activitat comercial.</span>
+              </span>
+              <ChevronRightIcon />
+            </Link>
           </section>
         </>
       )}

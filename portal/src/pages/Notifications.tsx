@@ -43,7 +43,7 @@ export default function Notifications() {
       {loading ? (
         <p className="muted">Carregant…</p>
       ) : items.length === 0 ? (
-        <p className="muted">No hi ha cap notificació.</p>
+        <p className="empty">No hi ha cap notificació.</p>
       ) : (
         <ul className="notif-list">
           {items.map((n) => {

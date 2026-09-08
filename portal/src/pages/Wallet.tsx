@@ -135,7 +135,7 @@ export default function Wallet() {
           <section className="section">
             <h2 className="section-title">Moviments</h2>
             {ledger.length === 0 ? (
-              <p className="muted">Encara no hi ha moviments.</p>
+              <p className="empty">Encara no hi ha moviments.</p>
             ) : (
               <ul className="movement-list">
                 {ledger.map((m) => (

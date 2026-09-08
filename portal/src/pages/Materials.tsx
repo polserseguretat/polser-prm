@@ -62,7 +62,7 @@ export default function Materials() {
       {loading ? (
         <p className="muted">Carregant…</p>
       ) : filtered.length === 0 ? (
-        <p className="muted">No hi ha materials en aquesta categoria.</p>
+        <p className="empty">No hi ha materials en aquesta categoria.</p>
       ) : (
         <div className="material-list">
           {filtered.map((m) => (

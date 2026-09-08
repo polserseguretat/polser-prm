@@ -47,6 +47,13 @@ textarea {
   font: inherit;
 }
 
+a:focus-visible,
+button:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
+
 /* ---------- Layout ---------- */
 
 .app-shell {
@@ -65,24 +72,32 @@ textarea {
   margin: 0 auto;
 }
 
-/* ---------- Top nav (escriptori) ---------- */
+/* ---------- Top nav / capçalera (mòbil i escriptori) ---------- */
 
 .topnav {
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   background: var(--navy);
   color: #fff;
-  padding: 12px 28px;
+  padding: 10px 16px;
   position: sticky;
   top: 0;
   z-index: 20;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  color: #fff;
+  min-width: 0;
+}
+
+.brand:hover {
+  color: #fff;
 }
 
 .brand-logo,
@@ -90,38 +105,42 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
   background: var(--orange);
   color: #fff;
   font-weight: 800;
-  font-size: 22px;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
+  min-width: 0;
 }
 
 .brand-text strong {
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .brand-text span {
+  display: none;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
 }
 
 .topnav-links {
-  display: flex;
-  gap: 8px;
+  display: none;
+  gap: 6px;
 }
 
 .topnav-link {
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 600;
@@ -130,11 +149,38 @@ textarea {
 
 .topnav-link:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .topnav-link.active {
   background: var(--orange);
   color: #fff;
+}
+
+.topnav-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.icon-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.icon-btn.active {
+  color: #fff;
+  background: rgba(255, 107, 0, 0.3);
 }
 
 /* ---------- Bottom nav (mòbil, fixa) ---------- */
@@ -154,11 +200,14 @@ textarea {
 
 .bottomnav-item {
   flex: 1;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
   color: rgba(255, 255, 255, 0.65);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  padding: 10px 4px;
+  padding: 8px 4px;
   border-radius: 10px;
 }
 
@@ -278,6 +327,105 @@ textarea {
   color: var(--text);
 }
 
+/* ---------- Targetes / ombres suaus ---------- */
+
+.counter,
+.product-card,
+.referral-card,
+.movement,
+.material-card,
+.notif-item,
+.profile-card,
+.form-card,
+.withdraw-box,
+.quick-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.product-card,
+.referral-card,
+.material-card,
+.quick-card {
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.product-card:hover,
+.referral-card:hover,
+.material-card:hover,
+.quick-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+/* ---------- Enllaç ràpid (Materials) ---------- */
+
+.quick-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  color: inherit;
+}
+
+.quick-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fff8ef;
+  color: var(--orange);
+  flex-shrink: 0;
+}
+
+.quick-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.quick-card-text strong {
+  font-size: 15px;
+  color: var(--navy);
+}
+
+.quick-card-text span {
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.quick-card > svg {
+  color: var(--gray);
+  flex-shrink: 0;
+}
+
+/* ---------- Estat buit ---------- */
+
+.empty {
+  text-align: center;
+  color: var(--gray);
+  font-size: 14px;
+  padding: 32px 16px;
+}
+
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--gray);
+}
+
 /* ---------- Botons ---------- */
 
 .btn {
@@ -289,12 +437,25 @@ textarea {
   padding: 12px 18px;
   font-weight: 700;
   font-size: 14px;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+.btn:hover {
+  opacity: 0.92;
+}
+
+.btn:active {
+  transform: translateY(1px);
 }
 
 .btn-primary {
   background: var(--orange);
   color: #fff;
+}
+
+.btn-primary:hover {
+  opacity: 0.95;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.35);
 }
 
 .btn-primary:disabled {
@@ -960,6 +1121,24 @@ textarea {
 
 @media (min-width: 768px) {
   .topnav {
+    padding: 12px 28px;
+  }
+
+  .brand-logo {
+    width: 42px;
+    height: 42px;
+    font-size: 22px;
+  }
+
+  .brand-text strong {
+    font-size: 15px;
+  }
+
+  .brand-text span {
+    display: block;
+  }
+
+  .topnav-links {
     display: flex;
   }
 

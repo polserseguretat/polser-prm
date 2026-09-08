@@ -65,7 +65,7 @@ export default function Referrals() {
       {loading ? (
         <p className="muted">Carregant…</p>
       ) : filtered.length === 0 ? (
-        <p className="muted">No hi ha cap referit en aquest estat.</p>
+        <p className="empty">No hi ha cap referit en aquest estat.</p>
       ) : (
         <div className="referral-list">
           {filtered.map((r) => (

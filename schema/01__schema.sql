@@ -18,7 +18,7 @@ CREATE TYPE partner_type     AS ENUM ('inmobiliaria','administrador_fincas','ope
 CREATE TYPE partner_status   AS ENUM ('pendente','actiu','inactiu','bloquejat');
 CREATE TYPE member_role      AS ENUM ('owner','editor','viewer');
 CREATE TYPE service_category AS ENUM ('alarma','videovigilancia','manteniment');
-CREATE TYPE service_sector   AS ENUM ('residencial','negocio');
+CREATE TYPE service_sector   AS ENUM ('residencial','negocio','comunidades','industria');
 CREATE TYPE referral_status  AS ENUM ('lead','contactado','presupuesto','aceptado','instalado','perdido');
 CREATE TYPE referral_source  AS ENUM ('portal','whatsapp','email','telefono','web');
 CREATE TYPE sync_status      AS ENUM ('pendiente','ok','error');

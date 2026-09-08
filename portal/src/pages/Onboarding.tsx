@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createReferral, getServices, ApiError, type Service } from '../lib/api';
-import { SparklesIcon, BuildingIcon, CheckIcon } from '../components/Icons';
+import { SparklesIcon, BuildingIcon, CommunityIcon, FactoryIcon, CheckIcon } from '../components/Icons';
 
 const FALLBACK_SERVICES: Service[] = [
   { id: 'demo-alarma', code: 'pis', name: 'Per pisos', category: 'alarma', sector: 'residencial', alta_fee: 599, monthly_fee: 27.99, iva_included: true, details: null, active: true },
@@ -22,6 +22,18 @@ const SECTOR_STEPS = [
     icon: 'negoci',
     desc: 'Oficines, botigues i locals',
   },
+  {
+    value: 'comunidades',
+    title: 'Per a la seva comunitat',
+    icon: 'comunitat',
+    desc: 'Comunitats de veïns i administradors de finques',
+  },
+  {
+    value: 'industria',
+    title: 'Per a la seva indústria',
+    icon: 'industria',
+    desc: 'Naus, polígons i instal·lacions industrials',
+  },
 ] as const;
 
 const STEPS = [
@@ -30,6 +42,13 @@ const STEPS = [
   { key: 'client', label: 'Dades del client' },
   { key: 'done', label: 'Fet' },
 ];
+
+const SECTOR_LABEL: Record<string, string> = {
+  residencial: 'Llar',
+  negocio: 'Negoci',
+  comunidades: 'Comunitat',
+  industria: 'Indústria',
+};
 
 const fmtEuro = (n: number) =>
   new Intl.NumberFormat('ca-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
@@ -125,7 +144,15 @@ export default function Onboarding() {
             {SECTOR_STEPS.map((opt) => (
               <button type="button" key={opt.value} className="sector-option" onClick={() => pickSector(opt.value)}>
                 <span className="sector-icon" aria-hidden="true">
-                  {opt.icon === 'casa' ? <SparklesIcon size={24} /> : <BuildingIcon size={24} />}
+                  {opt.icon === 'casa' ? (
+                    <SparklesIcon size={24} />
+                  ) : opt.icon === 'comunitat' ? (
+                    <CommunityIcon size={24} />
+                  ) : opt.icon === 'industria' ? (
+                    <FactoryIcon size={24} />
+                  ) : (
+                    <BuildingIcon size={24} />
+                  )}
                 </span>
                 <strong>{opt.title}</strong>
                 <span className="sector-desc">{opt.desc}</span>
@@ -149,7 +176,7 @@ export default function Onboarding() {
               <button type="button" key={s.id} className="service-option" onClick={() => pickService(s.id)}>
                 <span className="service-option-main">
                   <strong>{s.name}</strong>
-                  {s.sector === 'negocio' && <span className="service-tag">Negoci</span>}
+                  {SECTOR_LABEL[s.sector] && <span className="service-tag">{SECTOR_LABEL[s.sector]}</span>}
                 </span>
                 <span className="service-option-meta">
                   {s.alta_fee ? `Alta ${fmtEuro(s.alta_fee)}` : 'Pressupost a mida'}

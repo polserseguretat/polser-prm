@@ -115,6 +115,31 @@ export function BuildingIcon({ size }: IconProps) {
   );
 }
 
+export function CommunityIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M3 21h18" />
+      <path d="M5 21V7l8-4v18" />
+      <path d="M19 21V11l-6-4" />
+      <path d="M9 9v.01" />
+      <path d="M9 12v.01" />
+      <path d="M9 15v.01" />
+      <path d="M9 18v.01" />
+    </Svg>
+  );
+}
+
+export function FactoryIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+      <path d="M17 18h1" />
+      <path d="M12 18h1" />
+      <path d="M7 18h1" />
+    </Svg>
+  );
+}
+
 export function CheckIcon({ size }: IconProps) {
   return (
     <Svg size={size}>

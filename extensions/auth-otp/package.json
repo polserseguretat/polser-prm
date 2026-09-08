@@ -10,8 +10,12 @@
     "host": "^12.0.0"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --format=esm --platform=node --target=node20 --external:jsonwebtoken --external:@directus/errors --outfile=dist/index.js",
-    "dev": "esbuild src/index.ts --bundle --format=esm --platform=node --target=node20 --external:jsonwebtoken --external:@directus/errors --outfile=dist/index.js --watch"
+    "build": "esbuild src/index.ts --bundle --format=esm --platform=node --target=node20 --outfile=dist/index.js",
+    "dev": "esbuild src/index.ts --bundle --format=esm --platform=node --target=node20 --outfile=dist/index.js --watch"
+  },
+  "dependencies": {
+    "@directus/errors": "^2.5.1",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "esbuild": "^0.21.5"

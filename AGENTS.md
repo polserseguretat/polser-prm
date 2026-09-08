@@ -137,10 +137,11 @@ no només a l'UI de Directus, perquè quedi versionat.
   Directus Flows (llicència free limitada). El disparador d'events el gestiona el mateix n8n: el nodo
   **Postgres Trigger** (mode *Table Row Change Events*) crea el seu propi trigger sobre `referrals`
   (AFTER INSERT → `pg_notify`) en activar el workflow i l'elimina en desactivar-lo (migració 07 només
-  prepara la BD: enum `create_opportunity` + rol `n8n` amb `CREATE` al schema i `TRIGGER` sobre
-  `referrals`). El payload del NOTIFY és la fila completa (`row_to_json`), assumit via canal intern de
-  Postgres. Les **ESCRIPTURES** de negoci es fan sempre per la API de Directus amb el token tècnic
-  (rol `POLSER_admin`); n8n només escriu a la BD per gestionar el seu trigger.
+  prepara la BD: enum `create_opportunity` + `CREATE` al schema per a l'usuari `polserprm` — el mateix
+  que Directus, que ja té `TRIGGER`/`SELECT` per la migració 05). El payload del NOTIFY és la fila
+  completa (`row_to_json`), assumit via canal intern de Postgres. Les **ESCRIPTURES** de negoci es fan
+  sempre per la API de Directus amb el token tècnic (rol `POLSER_admin`); n8n només escriu a la BD per
+  gestionar el seu trigger.
 - **RBAC (§4):** rols Directus `partner` / `POLSER_cpso` / `POLSER_admin` / `POLSER_ceo`.
   `POLSER_ceo` és l'ÚNIC que pot escriure `commission_rules` / comissions especials.
 - El portal fa `fetch` cap a `import.meta.env.VITE_DIRECTUS_URL` (`portal/src/lib/api.ts`).

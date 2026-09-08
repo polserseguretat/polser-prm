@@ -37,8 +37,8 @@ n8n — Workflow C "sync_retry" (Cron 15 min, xarxa de seguretat)
 - El **disparador d'events el gestiona n8n**: el nodo Postgres Trigger (mode
   *Table Row Change Events*) **crea el seu propi trigger** sobre `referrals`
   (AFTER INSERT → `pg_notify`) en activar el workflow i l'**elimina en desactivar-lo**.
-  Requereix que el rol `n8n` tingui `CREATE` al schema + `TRIGGER` sobre `referrals`
-  (ja concedit a la migració 07).
+  Requereix que l'usuari de BD tingui `CREATE` al schema + `TRIGGER` sobre `referrals`
+  (el mateix `polserprm` que fa servir Directus; `CREATE` el concedeix la migració 07).
 - El payload del NOTIFY que genera n8n és **`row_to_json(NEW)` = la fila completa**
   (inclou `client_name`/`client_phone`/`client_email`). Assumit: canal intern de
   Postgres; les dades no surten del servidor de BD.
@@ -54,15 +54,16 @@ n8n — Workflow C "sync_retry" (Cron 15 min, xarxa de seguretat)
 
 | Credencial / Variable | Valor | On es crea |
 |---|---|---|
-| **Postgres** (n8n) | host:port de la BD PRM, usuari `n8n`, contrasenya forta (establerta amb `ALTER ROLE n8n WITH LOGIN PASSWORD '...'` després de la migració 07) | n8n → Credentials → PostgreSQL |
+| **Postgres** (n8n) | host:port de la BD PRM, **usuari `polserprm`** (el mateix que Directus, DB_USER) i la seva contrasenya del `.env` | n8n → Credentials → PostgreSQL |
 | **Directus** (n8n) | `https://prmcore.polser.cat`, token static de l'usuari tècnic `n8n@polser.cat` (rol `POLSER_admin`) | Directus → Settings → Access → Tokens → **crear token**; a n8n: Credentials → **Header Auth** (`Authorization: Bearer <token>`) |
 | **Odoo** (n8n) | `<odoo_url>`, `<db>`, `<login>`, `<apikey>` (usuari tècnic Odoo, mai admin) | n8n → Credentials → HTTP Header Auth, o variables al workflow |
 
 Variables de workflow (n8n → Variables): `ODOO_URL`, `ODOO_DB`, `ODOO_LOGIN`, `ODOO_APIKEY`, `DIRECTUS_URL`.
 
-> ⚠️ La migració 07 prepara la BD: enum `create_opportunity` + rol `n8n` amb
-> permisos de `CREATE` al schema i `TRIGGER` sobre `referrals`. El trigger en sí
-> NO l'crea la migració: el crea n8n (nodo Postgres Trigger) en activar el workflow.
+> ⚠️ La migració 07 prepara la BD: enum `create_opportunity` + `GRANT CREATE ON
+> SCHEMA public` a l'usuari `polserprm` (el mateix que fa servir n8n). El trigger
+> en sí NO l'crea la migració: el crea n8n (nodo Postgres Trigger) en activar el
+> workflow. `polserprm` ja té `TRIGGER`/`SELECT` sobre les taules per la migració 05.
 
 ---
 
@@ -292,8 +293,8 @@ Cobreix els casos en què n8n estava caigut quan arribà el NOTIFY (LISTEN és e
 
 ## 6. Checklist de verificació
 
-1. [ ] Aplicada la migració 07 (superusuari, pgAdmin): enum `create_opportunity` + rol `n8n` (CREATE al schema, TRIGGER sobre referrals, SELECT).
-2. [ ] `ALTER ROLE n8n WITH LOGIN PASSWORD '...';` i credencial Postgres a n8n.
+1. [ ] Aplicada la migració 07 (superusuari, pgAdmin): enum `create_opportunity` + `GRANT CREATE ON SCHEMA public` a `polserprm`.
+2. [ ] Credencial Postgres a n8n amb l'usuari `polserprm` (el mateix que Directus).
 3. [ ] Creat usuari tècnic `n8n@polser.cat` (rol `POLSER_admin`) + static token a Directus.
 4. [ ] Credencials Directus i Odoo afegides a n8n; variables `ODOO_*`/`DIRECTUS_URL` definides.
 5. [ ] Activar workflow B → registrar un referit des del portal (onboarding) → comprovar

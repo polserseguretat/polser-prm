@@ -15,9 +15,9 @@ quan es registra un referit al PRM (INSERT a `referrals`), es crea l'oportunitat
 ```
 [Directus /portal → INSERT a referrals (knex directo)]
    │
-   ▼ AFTER INSERT → pg_notify('prm_referral_changes', '{"event":"referral.created","id":...,"referral_code":"REF-XXXX"}')
-n8n — Workflow B "on_referral_created" (Postgres Trigger = LISTEN)
-   │  filter event == 'referral.created'
+   ▼ AFTER INSERT → pg_notify (trigger creat pel mateix n8n, mode 'Table Row Change Events')
+n8n — Workflow B "on_referral_created" (Postgres Trigger = LISTEN, event Insert)
+   │  payload = row_to_json(NEW) → fila completa (inclou dades del client)
    ▼  Execute Workflow
 n8n — Workflow A "process_referral" (sub-workflow reutilitzable, input: referral_id)
    │  ├─ GET /items/referrals/{id}        (Directus API, token tècnic)
@@ -34,11 +34,19 @@ n8n — Workflow C "sync_retry" (Cron 15 min, xarxa de seguretat)
 ```
 
 **Regles d'enginyeria:**
-- n8n **només LLEGEIX** la BD del PRM (LISTEN + polling). Totes les **ESCRIPTURES**
-  es fan per la **API de Directus** amb un token tècnic (rol `POLSER_admin`).
-- El payload del NOTIFY porta **només `id` + `referral_code`** (mai dades personals, RGPD).
+- El **disparador d'events el gestiona n8n**: el nodo Postgres Trigger (mode
+  *Table Row Change Events*) **crea el seu propi trigger** sobre `referrals`
+  (AFTER INSERT → `pg_notify`) en activar el workflow i l'**elimina en desactivar-lo**.
+  Requereix que el rol `n8n` tingui `CREATE` al schema + `TRIGGER` sobre `referrals`
+  (ja concedit a la migració 07).
+- El payload del NOTIFY que genera n8n és **`row_to_json(NEW)` = la fila completa**
+  (inclou `client_name`/`client_phone`/`client_email`). Assumit: canal intern de
+  Postgres; les dades no surten del servidor de BD.
+- Les **ESCRIPTURES** de negoci es fan sempre per la **API de Directus** amb un
+  token tècnic (rol `POLSER_admin`), mai per la BD.
 - **Idempotència:** doble capa — `odo_opportunity_id` al PRM + cerca del lead per
   `name` a Odoo. Mai es duplica una oportunitat.
+```
 
 ---
 
@@ -52,36 +60,44 @@ n8n — Workflow C "sync_retry" (Cron 15 min, xarxa de seguretat)
 
 Variables de workflow (n8n → Variables): `ODOO_URL`, `ODOO_DB`, `ODOO_LOGIN`, `ODOO_APIKEY`, `DIRECTUS_URL`.
 
-> ⚠️ La migració 07 ja crea la funció `notify_referral_change()` i el trigger
-> `trg_referral_notify` sobre `referrals`. n8n només s'ha de subscriure al canal.
+> ⚠️ La migració 07 prepara la BD: enum `create_opportunity` + rol `n8n` amb
+> permisos de `CREATE` al schema i `TRIGGER` sobre `referrals`. El trigger en sí
+> NO l'crea la migració: el crea n8n (nodo Postgres Trigger) en activar el workflow.
 
 ---
 
 ## 2. Workflow B — `on_referral_created` (trigger)
 
-**Trigger:** nodo **Postgres Trigger**
+**Trigger:** nodo **Postgres Trigger** → mode **Table Row Change Events**
+(*"Listen and Create Trigger Rule"*)
+
 - Credential: Postgres (rol `n8n`).
-- **Channel name:** `prm_referral_changes`
-- Si el nodo demana taula/funció: `referrals` / `notify_referral_change` (ja existents).
+- **Schema:** `public` — **Table:** `referrals`
+- **Events:** `Insert` (només alta de referits; la resta de transicions es
+  tractaran a una fase posterior).
+- (Opcional) **Channel Name:** `prm_referral_changes` (per deixar-lo fix; si es
+  deixa buit, n8n en genera un d'auto per al node).
 
-Després del trigger:
+> **Com es comporta:** en activar el workflow, n8n crea automàticament la funció
+> i el trigger sobre `referrals` (`AFTER INSERT → pg_notify`), i els **elimina en
+> desactivar** el workflow. Per això el **workflow C (cron)** és la xarxa de
+> seguretat: cobreix els períodes en què el workflow B no està actiu.
+> El payload del trigger és `row_to_json(NEW)` = **la fila completa del referit**.
 
-1. **Nodo Set / Code** — extreu el payload:
+Després del trigger, el payload arriba a `$json.payload` (la fila completa):
+
+1. **Nodo Set / Code** — extreu l'id:
    ```
-   event = $json.event
-   referral_id = $json.id
-   referral_code = $json.referral_code
+   referral_id = $json.payload.id
    ```
-   (El nodo Postgres Trigger retorna el JSON del NOTIFY com a `$json`.)
-
-2. **Nodo IF** — condició: `{{ $json.event }}` **equals** `referral.created`.
-   - True → continua.
-   - False → FI (no processar).
-
-3. **Nodo Execute Workflow** (sub-workflow):
+2. **Nodo Execute Workflow** (sub-workflow):
    - Workflow: `process_referral`
    - Mode: **Execute once per incoming item**
    - Payload: `{ "referral_id": "{{ $json.referral_id }}" }`
+
+> El sub-workflow A **torna a fer el GET del referit** per la API de Directus
+> (dada fresca + idempotència consistent amb la vía C, que només passa l'`id`),
+> així que la vía B no cal que transmeti la fila completa.
 
 ---
 
@@ -261,18 +277,22 @@ Cobreix els casos en què n8n estava caigut quan arribà el NOTIFY (LISTEN és e
 
 - **Quan es crearà la `crm.lead`?** Al mateix moment del registre del referit (INSERT a
   `referrals`), via LISTEN. Alta immediata (decisió CEO).
+- **Cicle de vida del trigger:** el crea/elimina n8n en activar/desactivar el workflow B.
+  Si B està inactiu, no hi ha notificacions → el workflow C (cron) ho cobreix.
 - **Transicions futures** (`aceptado` → `sale.order`/pressupost, `instalado`, callback mensual
-  de `active_subscription`, §6.3.2/6.3.3): reutilitzar el mateix patró — ampliar el trigger a
-  `AFTER UPDATE OF status` amb `event='referral.status_changed'` i nous sub-workflows a n8n.
-- **RGPD:** el NOTIFY només porta `id` + `referral_code`. Les dades personals viatgen per la
-  API de Directus (interna) i cap a Odoo (finalitat: CRM). El portal de partners **mai** les exposa.
+  de `active_subscription`, §6.3.2/6.3.3): reutilitzar el mateix patró — el nodo Postgres
+  Trigger també pot escoltar `Update` (amb protecció anti-bucle perquè les escriptures de n8n
+  via API no generin bucles) i nous sub-workflows a n8n.
+- **RGPD:** el payload del NOTIFY generat per n8n és la **fila completa** del referit (inclou
+  dades del client). Assumit: viatja només pel canal intern de Postgres, dins del servidor de
+  BD, i s'usa per a la finalitat de CRM. El portal de partners **mai** exposa aquestes dades.
 - **Escalabilitat:** cap limitació de flows de Directus; tota la lògica és a n8n.
 
 ---
 
 ## 6. Checklist de verificació
 
-1. [ ] Aplicada la migració 07 (superusuari, pgAdmin): trigger + enum + rol `n8n`.
+1. [ ] Aplicada la migració 07 (superusuari, pgAdmin): enum `create_opportunity` + rol `n8n` (CREATE al schema, TRIGGER sobre referrals, SELECT).
 2. [ ] `ALTER ROLE n8n WITH LOGIN PASSWORD '...';` i credencial Postgres a n8n.
 3. [ ] Creat usuari tècnic `n8n@polser.cat` (rol `POLSER_admin`) + static token a Directus.
 4. [ ] Credencials Directus i Odoo afegides a n8n; variables `ODOO_*`/`DIRECTUS_URL` definides.

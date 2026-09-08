@@ -86,3 +86,39 @@ export function ChevronRightIcon({ size }: IconProps) {
     </Svg>
   );
 }
+
+export function SparklesIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+      <path d="M20 3v4" />
+      <path d="M22 5h-4" />
+    </Svg>
+  );
+}
+
+export function BuildingIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
+      <path d="M9 22v-4h6v4" />
+      <path d="M8 6h.01" />
+      <path d="M16 6h.01" />
+      <path d="M12 6h.01" />
+      <path d="M12 10h.01" />
+      <path d="M12 14h.01" />
+      <path d="M16 10h.01" />
+      <path d="M16 14h.01" />
+      <path d="M8 10h.01" />
+      <path d="M8 14h.01" />
+    </Svg>
+  );
+}
+
+export function CheckIcon({ size }: IconProps) {
+  return (
+    <Svg size={size}>
+      <path d="M20 6 9 17l-5-5" />
+    </Svg>
+  );
+}

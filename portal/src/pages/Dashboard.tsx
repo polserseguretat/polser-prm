@@ -1,35 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getServices, getReferrals, getWalletLedger, type Service, type Referral, type WalletEntry } from '../lib/api';
-import { FileIcon, ChevronRightIcon } from '../components/Icons';
-
-const FALLBACK_SERVICES: Service[] = [
-  { id: 'demo-alarma', code: 'pis', name: 'Alarma per a la llar', category: 'alarma', sector: 'residencial', alta_fee: 599, monthly_fee: 27.99, iva_included: true, details: null, active: true },
-  { id: 'demo-cctv', code: 'videovigilancia', name: 'Videovigilància', category: 'videovigilancia', sector: 'residencial', alta_fee: 320, monthly_fee: 12, iva_included: true, details: null, active: true },
-  { id: 'demo-acces', code: 'amida', name: 'Control d\'accessos', category: 'manteniment', sector: 'negocio', alta_fee: 250, monthly_fee: 10, iva_included: false, details: null, active: true },
-];
-
-const CATEGORY_LABEL: Record<string, string> = {
-  alarma: 'Alarma',
-  videovigilancia: 'Videovigilància',
-  manteniment: 'Manteniment',
-};
+import { getReferrals, getWalletLedger, type Referral, type WalletEntry } from '../lib/api';
+import { FileIcon, ChevronRightIcon, SparklesIcon } from '../components/Icons';
 
 const fmtEuro = (n: number) =>
   new Intl.NumberFormat('ca-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
 
 export default function Dashboard() {
-  const [services, setServices] = useState<Service[]>(FALLBACK_SERVICES);
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [ledger, setLedger] = useState<WalletEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    Promise.allSettled([getServices(), getReferrals(), getWalletLedger()])
-      .then(([s, r, w]) => {
+    Promise.allSettled([getReferrals(), getWalletLedger()])
+      .then(([r, w]) => {
         if (!active) return;
-        if (s.status === 'fulfilled') setServices(s.value.data ?? FALLBACK_SERVICES);
         if (r.status === 'fulfilled') setReferrals(r.value.data ?? []);
         if (w.status === 'fulfilled') setLedger(w.value.data ?? []);
         setLoading(false);
@@ -75,24 +61,21 @@ export default function Dashboard() {
           </div>
 
           <section className="section">
-            <h2 className="section-title">Els nostres productes</h2>
-            <div className="product-list">
-              {services.map((p) => (
-                <div className="product-card" key={p.id}>
-                  <div className="product-info">
-                    <span className="product-cat">{CATEGORY_LABEL[p.category] ?? p.category}</span>
-                    <h3>{p.name}</h3>
-                    <div className="product-meta">
-                      <span>Alta: <strong>{p.alta_fee ? fmtEuro(p.alta_fee) : 'Pressupost'}</strong></span>
-                      <span>Quota mensual: <strong>{p.monthly_fee ? fmtEuro(p.monthly_fee) : '—'}</strong></span>
-                    </div>
-                  </div>
-                  <Link className="btn btn-primary" to="/referrals/new" state={{ product: p.name }}>
-                    Nou referit
-                  </Link>
-                </div>
-              ))}
-            </div>
+            <Link className="onboarding-card" to="/onboarding">
+              <span className="onboarding-card-glow" aria-hidden="true" />
+              <span className="onboarding-card-icon" aria-hidden="true">
+                <SparklesIcon size={26} />
+              </span>
+              <span className="onboarding-card-text">
+                <strong>Ofereix al teu client el que necessita</strong>
+                <span>
+                  Respon unes preguntes ràpides i enregistra el lead en menys d'un minut.
+                </span>
+              </span>
+              <span className="btn btn-white onboarding-card-cta">
+                Començar ara <ChevronRightIcon size={18} />
+              </span>
+            </Link>
           </section>
 
           <section className="section">

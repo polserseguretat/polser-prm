@@ -131,6 +131,7 @@ export interface ReferralPayload {
   service: string;
   service_type?: string;
   notes?: string;
+  source?: string;
 }
 
 export interface ReferralEvent {

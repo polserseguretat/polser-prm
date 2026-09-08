@@ -10,6 +10,7 @@ import Wallet from './pages/Wallet';
 import Materials from './pages/Materials';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
+import Onboarding from './pages/Onboarding';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/referrals/:id" element={<ReferralDetail />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/materials" element={<Materials />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/profile" element={<Profile />} />
       </Route>

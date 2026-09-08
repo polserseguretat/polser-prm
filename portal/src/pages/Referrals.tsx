@@ -44,7 +44,7 @@ export default function Referrals() {
           <h1 className="page-title">Els meus referits</h1>
           <p className="page-sub">Gestioneu les vostres referències de clients.</p>
         </div>
-        <Link className="btn btn-primary" to="/referrals/new">
+        <Link className="btn btn-primary" to="/onboarding">
           Nou referit
         </Link>
       </div>

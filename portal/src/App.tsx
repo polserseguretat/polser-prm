@@ -4,7 +4,6 @@ import RequireAuth from './components/RequireAuth';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Referrals from './pages/Referrals';
-import ReferralNew from './pages/ReferralNew';
 import ReferralDetail from './pages/ReferralDetail';
 import Wallet from './pages/Wallet';
 import Materials from './pages/Materials';
@@ -25,7 +24,6 @@ export default function App() {
       >
         <Route path="/" element={<Dashboard />} />
         <Route path="/referrals" element={<Referrals />} />
-        <Route path="/referrals/new" element={<ReferralNew />} />
         <Route path="/referrals/:id" element={<ReferralDetail />} />
         <Route path="/wallet" element={<Wallet />} />
         <Route path="/materials" element={<Materials />} />

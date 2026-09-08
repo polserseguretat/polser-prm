@@ -1,0 +1,2 @@
+# Normalitza els finals de línia a LF (evita soroll CRLF/LF als diffs)
+* text=auto eol=lf

@@ -33,12 +33,13 @@ cartera de comissions i notificacions — accedible des del **mòbil** (PWA).
 | Base de dades | PostgreSQL 16 (contenidor `db`) | BBDD del PRM dedicada. `schema/` = DDL canònic. |
 | Portal partner | React 19 + TypeScript + Vite → **PWA** | Repositori `portal/`. Mobile-first, bottom-nav 3 pestanyes. |
 | Lògica de negoci | Flows + extensions Directus (JS/TS) + **n8n** (orquestració) | n8n i Odoo són externs (fora d'aquest repo) i s'integren per API. |
-| Infra | Docker Compose + Caddy (TLS) | `docker-compose.yml`. |
+| Infra | Docker Compose + **Cloudflare Tunnel** (API) + **Cloudflare Pages** (portal) | `docker-compose.yml`. TLS i DNS a Cloudflare; Directus a l'arrel d'`api.partners.polser.cat`. |
 
 Flux alt nivell:
 ```
-Internet ─ Caddy ─┬─ partners.polser.cat ─► portal React PWA ─► /directus ─► Directus (API) ─► PostgreSQL
-                  └─ n8n (integracions) ──► Odoo 19 (ops internes + facturació)
+Internet ─ Cloudflare ─┬─ partners.polser.cat ─► Cloudflare Pages ─► portal React PWA ─► (fetch cross-origin) ─► Directus (API) ─► PostgreSQL
+                       └─ api.partners.polser.cat ─► Cloudflare Tunnel ─► Directus
+                       └─ n8n (integracions) ──► Odoo 19 (ops internes + facturació)
 ```
 
 ---
@@ -50,9 +51,8 @@ polser-prm/
 ├── AGENTS.md                       # aquest fitxer
 ├── README.md                       # quickstart + decisions
 ├── PLAN_IMPLEMENTACIO_PRM_DIRECTUS.md   # EL producte. Sempre obert.
-├── docker-compose.yml              # db + directus + caddy
+├── docker-compose.yml              # db + directus + cloudflared (túnel)
 ├── .env.example                    # copia → .env (MAI commitgis .env)
-├── Caddyfile
 ├── schema/
 │   ├── 01__schema.sql              # DDL del model (15 taules + enums + índexs)
 │   └── 02__seed.sql                # catàleg de serveis (KB) + settings
@@ -136,7 +136,9 @@ no només a l'UI de Directus, perquè quedi versionat.
 ## 8. Estat actual i què ve ara
 
 **Fet (F1):**
-- Infra base (compose: postgres + Directus 12.3.1 + Caddy), `.env.example`, `Caddyfile`.
+- Infra base (compose: postgres + Directus 12.3.1 + Cloudflare Tunnel), `.env.example`.
+- Publicació: portal React PWA a **Cloudflare Pages** (`portal/dist`, SPA fallback via `_redirects`)
+  i API Directus a l'arrel d'`api.partners.polser.cat` per **Cloudflare Tunnel** (`cloudflared`).
 - Esquema SQL complet (§3) + seed de serveis.
 - Portal React PWA **compilat i verificat** (`npm run build` exit 0) — fitxers sencers, però sense
   backend live (renderitza dades de demo / degradació gràcia).

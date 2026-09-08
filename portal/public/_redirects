@@ -1,0 +1,3 @@
+# Cloudflare Pages — SPA fallback (react-router BrowserRouter)
+# Qualsevol ruta sense fitxer real torna a index.html sense 404.
+/*  /index.html  200

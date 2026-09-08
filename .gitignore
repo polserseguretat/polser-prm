@@ -15,8 +15,6 @@ portal/vite.config.d.ts
 # dades locals contenidors
 pgdata/
 directus/uploads/
-caddy_data/
-caddy_config/
 
 # sistemes
 .DS_Store

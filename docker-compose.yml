@@ -1,6 +1,8 @@
 # =====================================================================
-# PRM POLSER — Stack: Directus (PostgreSQL) + Portal React PWA + Caddy
+# PRM POLSER — Stack: Directus (PostgreSQL) + Cloudflare Tunnel
 # Infra base (F1). n8n i Odoo es mantenen externs (s'integren per API).
+# Publicació: el portal React PWA viu a Cloudflare Pages (fora del repo)
+# i l'API Directus s'exposa per Cloudflare Tunnel (api.partners.polser.cat).
 # Ús:  cp .env.example .env  ->  omplir  ->  docker compose up -d
 # =====================================================================
 name: prm-polser
@@ -42,12 +44,15 @@ services:
       DB_DATABASE: "${POSTGRES_DB}"
       DB_USER: "${POSTGRES_USER}"
       DB_PASSWORD: "${POSTGRES_PASSWORD}"
-      # Publicació i CORS (portal React)
+      # Publicació i CORS: Directus a l'arrel d'api.partners.polser.cat (via Tunnel);
+      # el portal (partners.polser.cat, Cloudflare Pages) crida en cross-origin.
       PUBLIC_URL: "${PUBLIC_URL}"
       CORS_ENABLED: "true"
       CORS_ORIGIN: "${CORS_ORIGIN}"
     ports:
-      - "8055:8055"
+      # Només accés local (dev/admin). En producció NO s'exposa públicament:
+      # l'únic accés extern és el túnel de cloudflared.
+      - "127.0.0.1:8055:8055"
     volumes:
       - uploads:/directus/uploads
     healthcheck:
@@ -57,35 +62,24 @@ services:
       retries: 3
       start_period: 30s
 
-  caddy:
-    image: caddy:2
-    container_name: prm-caddy
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: prm-cloudflared
     restart: unless-stopped
+    # Túnel remot gestionat des del dashboard Zero Trust: el token ja porta el
+    # hostname (api.partners.polser.cat -> http://directus:8055). Sense ports oberts.
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       directus:
         condition: service_healthy
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      # Domini públic del portal de partners (ex.: partners.polser.cat)
-      CADDY_SITE_NAME: "${CADDY_SITE_NAME}"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./portal/dist:/srv/portal
-      - caddy_data:/data
-      - caddy_config:/config
 
 # =====================================================================
 # Estructura del repo
 #   schema/   -> DDL + seed (migracions bàsiques)
-#   portal/   -> app React PWA (build -> portal/dist, servida per Caddy)
-#   Caddyfile -> proxy TLS (portal + /directus)
+#   portal/   -> app React PWA (build -> portal/dist, desplegada a Cloudflare Pages)
+#   Caddyfile -> ja NO s'usa (substituït per Cloudflare Tunnel + Pages)
 # =====================================================================
 
 volumes:
   pgdata:
   uploads:
-  caddy_data:
-  caddy_config:

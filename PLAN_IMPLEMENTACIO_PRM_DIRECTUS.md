@@ -48,23 +48,27 @@ Odoo recibe las sales para facturación y devuelve el estado de suscripción par
 | Portal partner | **React 19 + Vite + TypeScript** → **PWA** | Interfaz mobile-first/installable para partners |
 | Backoffice lógico | **Flows + extensiones Directus** (JS/TS) + **n8n** (orquestación) | Motor de comisiones, ciclos, notificaciones, sincronización Odoo |
 | Orquestación | **n8n** (ya en stack) | Sincronización Odoo, emails, alertas |
-| Infra | **Docker Compose + Caddy** (HTTPS) | Self-hosted, mínimo de servicios |
+| Infra | **Docker Compose + Cloudflare Tunnel** (API) + **Cloudflare Pages** (portal) | Self-hosted, mínimo de servicios; TLS/DNS en Cloudflare |
 
 ### 2.2 Topología (Docker Compose)
 
 - `postgres` — BBDD del PRM (docker volume + `pg_dump` diario).
 - `directus` — app Node conectada a `postgres`.
-- `portal` — build estático de React (servido por Caddy). PWA manifest + service worker.
-- `caddy` — reverse proxy, TLS (partners.polser.cat), sirve `portal` y proxys `/api` (Directus).
+- `portal` — build estático de React, desplegado en **Cloudflare Pages** (`_redirects` para SPA). PWA manifest + service worker.
+- `cloudflared` — túnel Cloudflare que expone `directus` (API + admin) en `api.partners.polser.cat`.
 - `n8n` — sync Odoo ↔ PRM, emails de hitos (ya existente).
 
 ```
-Internet ── Caddy (TLS)
-             ├─ partners.polser.cat  → portal React (PWA)
-             │      └─ /directus     → Directus (API + admin interno)
-             ├─ n8n.polser.cat       → orquestación
+Internet ── Cloudflare
+             ├─ partners.polser.cat     → Cloudflare Pages → portal React (PWA)
+             │                              └─ fetch cross-origin → Directus (API + admin)
+             ├─ api.partners.polser.cat → Cloudflare Tunnel → Directus
+             ├─ n8n.polser.cat          → orquestación
              └─ (Odoo 19 vía API, MISMO host o red) → sales
 ```
+
+> **Nota infra (decisión dirección 08/09/2026):** Caddy sustituido por Cloudflare Tunnel (API)
+> + Cloudflare Pages (portal). Directus vive a la raíz de `api.partners.polser.cat` (sin prefijo `/directus`).
 
 **Principio aplicado:** backend unificado para el PRM con **una sola BBDD Postgres**; Odoo se integra **por API**,
 **sin sincronización de esquemas** entre dos BBDD (solo intercambio de datos / eventos idempotentes).
@@ -449,7 +453,7 @@ que la facturación refleje la oportunidad real y dé base a la comisión recurr
 ### 6.5 RGPD y seguridad
 - Minimización: en el portal los partners ven solo **estado/fecha**, nunca datos personales del cliente referido.
 - Consentimiento de clientes referidos (base legitimada) y **DPA con partners**.
-- Cifrado en tránsito (TLS Caddy) y en reposo; backups `pg_dump` diarios con retención; restauración probada antes de go-live.
+- Cifrado en tránsito (TLS Cloudflare Tunnel / Pages) y en reposo; backups `pg_dump` diarios con retención; restauración probada antes de go-live.
 - Borrado: anonimización de `client_*` si se solicita; `partners` → `bloquejat` lógico.
 - RBAC y auditoría (`referral_events`, `odoo_sync_log`, `wallet_ledger`).
 
@@ -485,7 +489,7 @@ que la facturación refleje la oportunidad real y dé base a la comisión recurr
 | Fase | Contenido | Entregable / acepción |
 |---|---|---|
 | **F0 · Decisiones y spec** | Cerrar fuente de Odoo para `active_subscription` (§6.3), endpoint Odoo, export partners (NocoDB/Odoo), idioma portal, aprobar UI/tema, reglas comisión finales, RGPD/DPA | Checklist firmado; backlog P0 cerrado |
-| **F1 · Infra y BD** | Docker Compose (postgres + directus + portal + caddy), BBDD del PRM, migraciones SQL (schema §3), backups, TLS | `docker compose up` limpio; migraciones aplicadas; pg_dump OK |
+| **F1 · Infra y BD** | Docker Compose (postgres + directus + cloudflared), BBDD del PRM, migraciones SQL (schema §3), backups, TLS (Cloudflare Tunnel + Pages) | `docker compose up` limpio; migraciones aplicadas; pg_dump OK |
 | **F2 · Directus modelado** | Crear colecciones §3, roles/permissions §4, seed `services`/`settings`, seed `commission_rules`, Flows base (estados) | Modelo versionado en repo; RBAC operativo |
 | **F3 · API y auth** | Restricciones de `partner_members`, aislamiento por partner, endpoints para React, validaciones (dedupe, regla autónomos) | API: crear partner/referido, mover estado, saldo por partner |
 | **F4 · Portal React PWA** | Login, dashboard, referidos (lista/nuevo/detalle), wallet, materials, notifications; PWA manifest+SW, mobile-first | Un partner de prueba refiere y ve el estado desde el móvil |

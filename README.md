@@ -76,7 +76,7 @@ polser-prm/
     ├── 01__schema.sql     # DDL del model de dades (§3) — enums, taules, índexs
     └── 02__seed.sql       # catàleg de serveis + configuració (KB)
 └── portal/                # React PWA (mobile-first, bottom-nav: Inici / Els meus referits / Cartera)
-    └── public/_redirects  # SPA fallback per a Cloudflare Pages
+    └── public/              # manifest + sw.js (el SPA fallback el gestiona wrangler.jsonc)
 ```
 
 ---

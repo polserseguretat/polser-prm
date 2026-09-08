@@ -54,7 +54,8 @@ Odoo recibe las sales para facturación y devuelve el estado de suscripción par
 
 - `postgres` — BBDD del PRM (docker volume + `pg_dump` diario).
 - `directus` — app Node conectada a `postgres`.
-- `portal` — build estático de React, desplegado en **Cloudflare Pages** (`_redirects` para SPA). PWA manifest + service worker.
+- `portal` — build estático de React, desplegado como **Worker de static assets** (`wrangler.jsonc`,
+  `not_found_handling: single-page-application`). PWA manifest + service worker.
 - `cloudflared` — túnel Cloudflare que expone `directus` (API + admin) en `api.partners.polser.cat`.
 - `n8n` — sync Odoo ↔ PRM, emails de hitos (ya existente).
 

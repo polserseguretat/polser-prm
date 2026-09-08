@@ -137,7 +137,8 @@ no només a l'UI de Directus, perquè quedi versionat.
 
 **Fet (F1):**
 - Infra base (compose: postgres + Directus 12.3.1 + Cloudflare Tunnel), `.env.example`.
-- Publicació: portal React PWA a **Cloudflare Pages** (`portal/dist`, SPA fallback via `_redirects`)
+- Publicació: portal React PWA a **Cloudflare** (static assets worker `polser-prm`,
+  `portal/dist`; SPA fallback via `not_found_handling: single-page-application` a `wrangler.jsonc`)
   i API Directus a l'arrel d'`api.partners.polser.cat` per **Cloudflare Tunnel** (`cloudflared`).
 - Esquema SQL complet (§3) + seed de serveis.
 - Portal React PWA **compilat i verificat** (`npm run build` exit 0) — fitxers sencers, però sense

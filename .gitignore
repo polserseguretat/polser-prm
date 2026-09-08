@@ -7,6 +7,11 @@ node_modules/
 portal/dist/
 portal/node_modules/
 
+# artefactes de compilació TS
+*.tsbuildinfo
+portal/vite.config.js
+portal/vite.config.d.ts
+
 # dades locals contenidors
 pgdata/
 directus/uploads/

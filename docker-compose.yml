@@ -8,29 +8,11 @@
 name: prm-polser
 
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: prm-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: "${POSTGRES_USER}"
-      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "${POSTGRES_DB}"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   directus:
     image: directus/directus:12.3.1
-    container_name: prm-directus
+    container_name: polser-prm
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
       # Manu d'instància (Directus)
       KEY: "${DIRECTUS_KEY}"
@@ -38,9 +20,9 @@ services:
       ADMIN_EMAIL: "${DIRECTUS_ADMIN_EMAIL}"
       ADMIN_PASSWORD: "${DIRECTUS_ADMIN_PASSWORD}"
       # Base de dades (PostgreSQL del PRM)
-      DB_CLIENT: pg
-      DB_HOST: db
-      DB_PORT: 5432
+      DB_CLIENT: ${DB_CLIENT}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
       DB_DATABASE: "${POSTGRES_DB}"
       DB_USER: "${POSTGRES_USER}"
       DB_PASSWORD: "${POSTGRES_PASSWORD}"
@@ -52,26 +34,15 @@ services:
     ports:
       # Només accés local (dev/admin). En producció NO s'exposa públicament:
       # l'únic accés extern és el túnel de cloudflared.
-      - "127.0.0.1:8055:8055"
+      - "127.0.0.1:10001:8055"
     volumes:
       - uploads:/directus/uploads
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8055/server/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:10001/server/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: prm-cloudflared
-    restart: unless-stopped
-    # Túnel remot gestionat des del dashboard Zero Trust: el token ja porta el
-    # hostname (api.partners.polser.cat -> http://directus:8055). Sense ports oberts.
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-    depends_on:
-      directus:
-        condition: service_healthy
 
 # =====================================================================
 # Estructura del repo
@@ -81,5 +52,4 @@ services:
 # =====================================================================
 
 volumes:
-  pgdata:
   uploads:

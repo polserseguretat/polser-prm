@@ -7,7 +7,7 @@ node_modules/
 portal/dist/
 portal/node_modules/
 extensions/**/node_modules/
-extensions/**/dist/
+# NOTA: extensions/*/dist SÍ es commiteja (és l'artefacte que Directus carrega a /directus/extensions)
 
 # artefactes de compilació TS
 *.tsbuildinfo

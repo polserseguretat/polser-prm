@@ -34,7 +34,7 @@ services:
     ports:
       # Només accés local (dev/admin). En producció NO s'exposa públicament:
       # l'únic accés extern és el túnel de cloudflared.
-      - "127.0.0.1:10001:8055"
+      - "10001:8055"
     volumes:
       - uploads:/directus/uploads
     healthcheck:

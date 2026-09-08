@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import RequireAuth from './components/RequireAuth';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Referrals from './pages/Referrals';
@@ -14,7 +15,13 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route element={<Layout />}>
+      <Route
+        element={
+          <RequireAuth>
+            <Layout />
+          </RequireAuth>
+        }
+      >
         <Route path="/" element={<Dashboard />} />
         <Route path="/referrals" element={<Referrals />} />
         <Route path="/referrals/new" element={<ReferralNew />} />

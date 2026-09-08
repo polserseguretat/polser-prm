@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 import { getNotifications, type NotificationItem } from '../lib/api';
 
 const FALLBACK: NotificationItem[] = [
-  { id: 'n1', title: 'Benvingut al portal', body: 'Gràcies per formar part de la xarxa de partners de POLSER SEGURETAT. Ja podeu registrar referits i consultar la vostra cartera.', created_at: '2026-09-05T09:00:00Z', read: true },
-  { id: 'n2', title: 'Nou referit registrat', body: 'El referit del servei «pis» per a Barcelona s\'ha registrat correctament i ja l\'estem gestionant.', created_at: '2026-09-07T11:30:00Z', read: false },
-  { id: 'n3', title: 'Comissió acumulada', body: 'S\'ha acreditat la comissió d\'alta de 60,00 € a la vostra cartera.', created_at: '2026-09-08T08:00:00Z', read: false },
-  { id: 'n4', title: 'Campanya Setmana', body: 'Aquesta setmana us proposem prioritzar el servei de videovigilància: condiciones especials per a nous clients.', created_at: '2026-09-08T12:00:00Z', read: false },
+  { id: 'n1', title: 'Benvingut al portal', body: 'Gràcies per formar part de la xarxa de partners de POLSER SEGURETAT. Ja podeu registrar referits i consultar la vostra cartera.', image: null, created_at: '2026-09-05T09:00:00Z' },
+  { id: 'n2', title: 'Campanya Setmana', body: 'Aquesta setmana us proposem prioritzar el servei de videovigilància: condicions especials per a nous clients.', image: null, created_at: '2026-09-08T12:00:00Z' },
 ];
 
 export default function Notifications() {
   const [items, setItems] = useState<NotificationItem[]>(FALLBACK);
+  const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,11 +28,9 @@ export default function Notifications() {
     };
   }, []);
 
-  const markRead = (id: string) => {
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-  };
+  const markRead = (id: string) => setReadIds((prev) => new Set(prev).add(id));
 
-  const unread = items.filter((n) => !n.read).length;
+  const unread = items.filter((n) => !readIds.has(n.id)).length;
 
   return (
     <div className="page-inner">
@@ -49,21 +46,24 @@ export default function Notifications() {
         <p className="muted">No hi ha cap notificació.</p>
       ) : (
         <ul className="notif-list">
-          {items.map((n) => (
-            <li className={`notif-item${n.read ? '' : ' unread'}`} key={n.id}>
-              <span className="notif-dot" aria-hidden="true" />
-              <div className="notif-body">
-                <strong>{n.title}</strong>
-                <p>{n.body}</p>
-                <span>{formatDate(n.created_at)}</span>
-              </div>
-              {!n.read && (
-                <button type="button" className="btn-ghost notif-action" onClick={() => markRead(n.id)}>
-                  Marcar llegida
-                </button>
-              )}
-            </li>
-          ))}
+          {items.map((n) => {
+            const isRead = readIds.has(n.id);
+            return (
+              <li className={`notif-item${isRead ? '' : ' unread'}`} key={n.id}>
+                <span className="notif-dot" aria-hidden="true" />
+                <div className="notif-body">
+                  <strong>{n.title}</strong>
+                  {n.body && <p>{n.body}</p>}
+                  <span>{formatDate(n.created_at)}</span>
+                </div>
+                {!isRead && (
+                  <button type="button" className="btn-ghost notif-action" onClick={() => markRead(n.id)}>
+                    Marcar llegida
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

@@ -26,17 +26,20 @@ services:
       DB_DATABASE: "${POSTGRES_DB}"
       DB_USER: "${POSTGRES_USER}"
       DB_PASSWORD: "${POSTGRES_PASSWORD}"
-      # Publicació i CORS: Directus a l'arrel d'api.partners.polser.cat (via Tunnel);
+# Publicació i CORS: Directus a l'arrel d'api.partners.polser.cat (via Tunnel);
       # el portal (partners.polser.cat, Cloudflare Pages) crida en cross-origin.
       PUBLIC_URL: "${PUBLIC_URL}"
       CORS_ENABLED: "true"
       CORS_ORIGIN: "${CORS_ORIGIN}"
+      # Extensions (F3 auth-otp). Recarrega automàticament al canviar ./extensions.
+      EXTENSIONS_AUTO_RELOAD: "true"
     ports:
       # Només accés local (dev/admin). En producció NO s'exposa públicament:
       # l'únic accés extern és el túnel de cloudflared.
       - "10001:8055"
     volumes:
       - uploads:/directus/uploads
+      - ./extensions:/directus/extensions
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:10001/server/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s

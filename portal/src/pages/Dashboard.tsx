@@ -1,51 +1,58 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getDashboard, type DashboardData } from '../lib/api';
+import { getServices, getReferrals, getWalletLedger, type Service, type Referral, type WalletEntry } from '../lib/api';
 
-const FALLBACK: DashboardData = {
-  sent: 0,
-  completed: 0,
-  accumulatedCommission: 0,
-  walletBalance: 0,
-  products: [
-    { id: 'alarma', name: 'Alarma per a la llar', category: 'Seguretat', price: 180, monthlyFee: 15, description: 'Central i sensors de moviment.' },
-    { id: 'videovigilancia', name: 'Videovigilància', category: 'CCTV', price: 320, monthlyFee: 12, description: 'Càmeres d\'exterior i interior amb visió remota.' },
-    { id: 'control-acces', name: 'Control d\'accessos', category: 'Seguretat', price: 250, monthlyFee: 10, description: 'Targetes i reconeixement per a comunitats i empreses.' },
-  ],
+const FALLBACK_SERVICES: Service[] = [
+  { id: 'demo-alarma', code: 'pis', name: 'Alarma per a la llar', category: 'alarma', sector: 'residencial', alta_fee: 599, monthly_fee: 27.99, iva_included: true, details: null, active: true },
+  { id: 'demo-cctv', code: 'videovigilancia', name: 'Videovigilància', category: 'videovigilancia', sector: 'residencial', alta_fee: 320, monthly_fee: 12, iva_included: true, details: null, active: true },
+  { id: 'demo-acces', code: 'amida', name: 'Control d\'accessos', category: 'manteniment', sector: 'negocio', alta_fee: 250, monthly_fee: 10, iva_included: false, details: null, active: true },
+];
+
+const CATEGORY_LABEL: Record<string, string> = {
+  alarma: 'Alarma',
+  videovigilancia: 'Videovigilància',
+  manteniment: 'Manteniment',
 };
 
 const fmtEuro = (n: number) =>
   new Intl.NumberFormat('ca-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 2 }).format(n);
 
 export default function Dashboard() {
-  const [data, setData] = useState<DashboardData>(FALLBACK);
+  const [services, setServices] = useState<Service[]>(FALLBACK_SERVICES);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [ledger, setLedger] = useState<WalletEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    getDashboard()
-      .then((d) => {
-        if (active) {
-          setData({ ...FALLBACK, ...d });
-          setLoading(false);
-        }
+    Promise.allSettled([getServices(), getReferrals(), getWalletLedger()])
+      .then(([s, r, w]) => {
+        if (!active) return;
+        if (s.status === 'fulfilled') setServices(s.value.data ?? FALLBACK_SERVICES);
+        if (r.status === 'fulfilled') setReferrals(r.value.data ?? []);
+        if (w.status === 'fulfilled') setLedger(w.value.data ?? []);
+        setLoading(false);
       })
       .catch(() => {
-        if (active) {
-          // Si l'API no està en marxa, mostrem dades per defecte.
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
     };
   }, []);
 
+  const sent = referrals.length;
+  const completed = referrals.filter((r) => r.status === 'instalado').length;
+  const accumulatedCommission = ledger
+    .filter((e) => ['high', 'recurring', 'adjustment'].includes(e.type))
+    .reduce((sum, e) => sum + e.amount, 0);
+  const walletBalance = ledger.reduce((sum, e) => sum + e.amount, 0);
+
   const counters = [
-    { label: 'Referits enviats', value: data.sent },
-    { label: 'Referits completats', value: data.completed },
-    { label: 'Comissions acumulades', value: fmtEuro(data.accumulatedCommission) },
-    { label: 'Saldo de la cartera', value: fmtEuro(data.walletBalance) },
+    { label: 'Referits enviats', value: sent },
+    { label: 'Referits completats', value: completed },
+    { label: 'Comissions acumulades', value: fmtEuro(accumulatedCommission) },
+    { label: 'Saldo de la cartera', value: fmtEuro(walletBalance) },
   ];
 
   return (
@@ -69,15 +76,14 @@ export default function Dashboard() {
           <section className="section">
             <h2 className="section-title">Els nostres productes</h2>
             <div className="product-list">
-              {data.products.map((p) => (
+              {services.map((p) => (
                 <div className="product-card" key={p.id}>
                   <div className="product-info">
-                    <span className="product-cat">{p.category}</span>
+                    <span className="product-cat">{CATEGORY_LABEL[p.category] ?? p.category}</span>
                     <h3>{p.name}</h3>
-                    {p.description && <p className="product-desc">{p.description}</p>}
                     <div className="product-meta">
-                      <span>Preu: <strong>{fmtEuro(p.price)}</strong></span>
-                      <span>Quota mensual: <strong>{fmtEuro(p.monthlyFee)}</strong></span>
+                      <span>Alta: <strong>{p.alta_fee ? fmtEuro(p.alta_fee) : 'Pressupost'}</strong></span>
+                      <span>Quota mensual: <strong>{p.monthly_fee ? fmtEuro(p.monthly_fee) : '—'}</strong></span>
                     </div>
                   </div>
                   <Link className="btn btn-primary" to="/referrals/new" state={{ product: p.name }}>

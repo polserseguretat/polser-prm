@@ -6,6 +6,8 @@
 node_modules/
 portal/dist/
 portal/node_modules/
+extensions/**/node_modules/
+extensions/**/dist/
 
 # artefactes de compilació TS
 *.tsbuildinfo

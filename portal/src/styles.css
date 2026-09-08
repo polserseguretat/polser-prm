@@ -528,6 +528,36 @@ textarea {
   color: var(--red);
 }
 
+.badge-lead {
+  background: #fff8ef;
+  color: var(--orange);
+}
+
+.badge-contactado {
+  background: #eef3fb;
+  color: var(--navy);
+}
+
+.badge-presupuesto {
+  background: #eef3fb;
+  color: var(--navy);
+}
+
+.badge-aceptado {
+  background: #eef3fb;
+  color: var(--navy);
+}
+
+.badge-instalado {
+  background: #e9f8ef;
+  color: var(--green);
+}
+
+.badge-perdido {
+  background: #fdeeee;
+  color: var(--red);
+}
+
 .back {
   display: inline-block;
   margin-bottom: 12px;
@@ -608,6 +638,14 @@ textarea {
   margin-top: 2px;
 }
 
+.timeline-date {
+  display: block;
+  color: var(--gray);
+  font-size: 12px;
+  margin-top: 2px;
+  font-style: normal;
+}
+
 /* ---------- Cartera ---------- */
 
 .wallet-balance {
@@ -639,6 +677,17 @@ textarea {
 
 .wallet-pending strong {
   color: var(--orange);
+}
+
+.withdraw-box {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .movement-list {

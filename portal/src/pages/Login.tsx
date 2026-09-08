@@ -1,15 +1,19 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { loginRequestOtp, loginVerifyOtp, ApiError } from '../lib/api';
+import { setToken } from '../lib/session';
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/';
 
   const sendCode = async (e: FormEvent) => {
     e.preventDefault();
@@ -43,8 +47,9 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await loginVerifyOtp(email.trim(), code);
-      navigate('/', { replace: true });
+      const result = await loginVerifyOtp(email.trim(), code);
+      if (result.access_token) setToken(result.access_token);
+      navigate(from, { replace: true });
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Codi incorrecte. Torneu-ho a provar.';
       setError(msg);

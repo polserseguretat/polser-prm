@@ -1,11 +1,10 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { createReferral, ApiError, type ReferralPayload } from '../lib/api';
+import { createReferral, getServices, ApiError, type ReferralPayload, type Service } from '../lib/api';
 
-const PRODUCTS = [
-  'Alarma per a la llar',
-  'Videovigilància',
-  'Control d\'accessos',
+const FALLBACK_SERVICES: Service[] = [
+  { id: 'demo-alarma', code: 'pis', name: 'Alarma per a la llar', category: 'alarma', sector: 'residencial', alta_fee: 599, monthly_fee: 27.99, iva_included: true, details: null, active: true },
+  { id: 'demo-cctv', code: 'videovigilancia', name: 'Videovigilància', category: 'videovigilancia', sector: 'residencial', alta_fee: 320, monthly_fee: 12, iva_included: true, details: null, active: true },
 ];
 
 export default function ReferralNew() {
@@ -13,18 +12,37 @@ export default function ReferralNew() {
   const location = useLocation();
   const suggested = (location.state as { product?: string } | null)?.product;
 
+  const [services, setServices] = useState<Service[]>(FALLBACK_SERVICES);
   const [form, setForm] = useState<ReferralPayload>({
     client_name: '',
     client_phone: '',
     client_email: '',
-    product: suggested ?? '',
-    comments: '',
+    client_address: '',
+    service: '',
+    notes: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const set = (key: keyof ReferralPayload, value: string) =>
-    setForm((f) => ({ ...f, [key]: value }));
+  useEffect(() => {
+    let active = true;
+    getServices()
+      .then((res) => {
+        if (!active || !res.data) return;
+        setServices(res.data);
+        // Pre-selecciona el servei suggerit (des del dashboard)
+        const suggestedService = res.data.find((s) => s.name === suggested);
+        if (suggestedService) setForm((f) => ({ ...f, service: suggestedService.id }));
+      })
+      .catch(() => {
+        // fallback a demo
+      });
+    return () => {
+      active = false;
+    };
+  }, [suggested]);
+
+  const set = (key: keyof ReferralPayload, value: string) => setForm((f) => ({ ...f, [key]: value }));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -34,7 +52,7 @@ export default function ReferralNew() {
       setError('Introduïu el nom del client.');
       return;
     }
-    if (!form.product) {
+    if (!form.service) {
       setError('Seleccioneu un producte o servei.');
       return;
     }
@@ -87,12 +105,21 @@ export default function ReferralNew() {
         </label>
 
         <label className="field">
+          <span>Adreça (opcional)</span>
+          <input
+            value={form.client_address}
+            onChange={(e) => set('client_address', e.target.value)}
+            placeholder="Carrer i ciutat"
+          />
+        </label>
+
+        <label className="field">
           <span>Producte / servei</span>
-          <select value={form.product} onChange={(e) => set('product', e.target.value)}>
+          <select value={form.service} onChange={(e) => set('service', e.target.value)}>
             <option value="">Seleccioneu…</option>
-            {PRODUCTS.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {services.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
               </option>
             ))}
           </select>
@@ -102,8 +129,8 @@ export default function ReferralNew() {
           <span>Comentaris (opcional)</span>
           <textarea
             rows={3}
-            value={form.comments ?? ''}
-            onChange={(e) => set('comments', e.target.value)}
+            value={form.notes ?? ''}
+            onChange={(e) => set('notes', e.target.value)}
             placeholder="Notes internes per al referit."
           />
         </label>

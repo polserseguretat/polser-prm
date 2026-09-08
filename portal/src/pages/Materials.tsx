@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { getMaterials, type DocumentItem } from '../lib/api';
+import { getMaterials, assetUrl, type DocumentItem } from '../lib/api';
 
 const FALLBACK: DocumentItem[] = [
-  { id: 'd1', title: 'Contracte de col·laboració', type: 'contracte', category: 'Legal', version: 'v3.1', updated_at: '2026-08-01T10:00:00Z' },
-  { id: 'd2', title: 'Dossier comercial 2026', type: 'material', category: 'Comercial', version: '2026-01', updated_at: '2026-01-15T10:00:00Z' },
-  { id: 'd3', title: 'Manual d\'instal·lació (pisos)', type: 'manual', category: 'Tècnic', version: 'v1.2', updated_at: '2026-05-20T10:00:00Z' },
-  { id: 'd4', title: 'Acord de confidencialitat', type: 'acord', category: 'Legal', version: 'v1.0', updated_at: '2025-11-10T10:00:00Z' },
-  { id: 'd5', title: 'Logotip i imatge de marca', type: 'material', category: 'Comercial', version: '2026', updated_at: '2026-02-01T10:00:00Z' },
-  { id: 'd6', title: 'Guia ràpida del portal', type: 'manual', category: 'Formació', version: 'v1.0', updated_at: '2026-09-01T10:00:00Z' },
+  { id: 'd1', title: 'Contracte de col·laboració', type: 'contracte', category: 'Legal', file: null, version: 'v3.1', updated_at: '2026-08-01T10:00:00Z' },
+  { id: 'd2', title: 'Dossier comercial 2026', type: 'material', category: 'Comercial', file: null, version: '2026-01', updated_at: '2026-01-15T10:00:00Z' },
+  { id: 'd3', title: 'Manual d\'instal·lació (pisos)', type: 'manual', category: 'Tècnic', file: null, version: 'v1.2', updated_at: '2026-05-20T10:00:00Z' },
+  { id: 'd4', title: 'Acord de confidencialitat', type: 'acord', category: 'Legal', file: null, version: 'v1.0', updated_at: '2025-11-10T10:00:00Z' },
 ];
 
 const TYPE_LABEL: Record<string, string> = {
@@ -71,7 +69,7 @@ export default function Materials() {
             <div className="material-card" key={m.id}>
               <div className="material-info">
                 <div className="material-top">
-                  <span className={`badge badge-${m.type}`}>{TYPE_LABEL[m.type] ?? m.type}</span>
+                  <span className={`badge badge-${m.type ?? 'material'}`}>{TYPE_LABEL[m.type ?? ''] ?? m.type ?? 'Material'}</span>
                   {m.version && <span className="material-version">{m.version}</span>}
                 </div>
                 <strong>{m.title}</strong>
@@ -80,8 +78,8 @@ export default function Materials() {
                   {m.updated_at ? ` · Actualitzat ${formatDate(m.updated_at)}` : ''}
                 </span>
               </div>
-              {m.url ? (
-                <a className="btn btn-primary" href={m.url} target="_blank" rel="noreferrer">
+              {m.file ? (
+                <a className="btn btn-primary" href={assetUrl(m.file)} target="_blank" rel="noreferrer">
                   Descarregar
                 </a>
               ) : (

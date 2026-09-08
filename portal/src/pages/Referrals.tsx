@@ -2,17 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getReferrals, type Referral } from '../lib/api';
 
-const EMPTY = { data: [] as Referral[] };
-
 const STATUS_LABEL: Record<string, string> = {
-  new: 'Nou',
-  sent: 'Enviat',
-  contacted: 'Contactat',
-  completed: 'Completat',
-  cancelled: 'Cancel·lat',
+  lead: 'Nou',
+  contactado: 'Contactat',
+  presupuesto: 'Pressupost',
+  aceptado: 'Acceptat',
+  instalado: 'Instal·lat',
+  perdido: 'Perdut',
 };
 
-const STATUS_ORDER = ['new', 'sent', 'contacted', 'completed', 'cancelled'];
+const STATUS_ORDER = ['lead', 'contactado', 'presupuesto', 'aceptado', 'instalado', 'perdido'];
 
 export default function Referrals() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -29,10 +28,7 @@ export default function Referrals() {
         }
       })
       .catch(() => {
-        if (active) {
-          setReferrals(EMPTY.data);
-          setLoading(false);
-        }
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
@@ -75,8 +71,8 @@ export default function Referrals() {
           {filtered.map((r) => (
             <Link className="referral-card" to={`/referrals/${r.id}`} key={r.id}>
               <div className="referral-main">
-                <strong>{r.product}</strong>
-                <span className="referral-date">{formatDate(r.date_created)}</span>
+                <strong>{r.referral_code ?? 'Referit'}</strong>
+                <span className="referral-date">{formatDate(r.stage_date || r.created_at)}</span>
               </div>
               <span className={`badge badge-${r.status}`}>{STATUS_LABEL[r.status] ?? r.status}</span>
             </Link>

@@ -120,9 +120,13 @@ no només a l'UI de Directus, perquè quedi versionat.
 
 ## 7. Backend i integracions (apunts per a l'agent)
 
-- **Auth partners:** login sense contrasenya **email OTP** (§6.6 del plan): endpoints
-  `POST /auth/request-otp` i `POST /auth/verify-otp` com a extensió Directus; sessió llarga (~1 mes,
-  sliding), revocable. Rols POLSER interns: contrasenya + 2FA.
+- **Auth partners:** login sense contrasenya **email OTP** (§6.6 del plan). Endpoints
+  `POST /auth-otp/request-otp` i `POST /auth-otp/verify-otp` (extensió `extensions/endpoints/auth-otp`;
+  Directus prefixa els endpoints pel nom de l'extensió). Codi únic amb TTL curt, guardat com a HASH a
+  `auth_otps`; s'emet un JWT de Directus. Rols POLSER interns: contrasenya + 2FA.
+- **RBAC (§4):** seed idempotent a `extensions/hooks/rbac` (rols `partner`/`POLSER_cpso`/`POLSER_admin`/`POLSER_ceo`
+  + policies + permisos a l'arrencada). Aïllament per partner dels referits = F4 (cal camp `partner` a
+  `directus_users` + filtre `$CURRENT_USER.partner`).
 - **Notificacions on-demand (§6.4.1):** col·lecció `notifications`; in-app via Directus Realtime +
   push PWA via Web Push (VAPID), l'enviament el fa n8n.
 - **Sync Odoo (§6.3):** intercanvi de dades per events, orquestrat amb n8n; idempotència per `odo_opportunity_id`;
@@ -135,22 +139,23 @@ no només a l'UI de Directus, perquè quedi versionat.
 
 ## 8. Estat actual i què ve ara
 
-**Fet (F1):**
+**Fet (F1–F4):**
 - Infra base (compose: postgres + Directus 12.3.1 + Cloudflare Tunnel), `.env.example`.
 - Publicació: portal React PWA a **Cloudflare** (static assets worker `polser-prm`,
   `portal/dist`; SPA fallback via `not_found_handling: single-page-application` a `wrangler.jsonc`)
   i API Directus a l'arrel d'`api.partners.polser.cat` per **Cloudflare Tunnel** (`cloudflared`).
-- Esquema SQL complet (§3) + seed de serveis.
-- Portal React PWA **compilat i verificat** (`npm run build` exit 0) — fitxers sencers, però sense
-  backend live (renderitza dades de demo / degradació gràcia).
+- Esquema SQL complet (§3) + seed de serveis. Migracions: `03` (auth_otps.created_at), `04`
+  (directus_users.partner).
+- **F2 — RBAC:** hook `extensions/hooks/rbac` (rols/policies/permisos idempotent a l'arrencada).
+- **F3 — Auth OTP:** extensió `extensions/endpoints/auth-otp` + guard de sessió al router del portal.
+- **F4 — Portal lligat a l'API real** (`/items/*`): aïllament per partner via `directus_users.partner`
+  (hook `extensions/hooks/partners` + permisos `$CURRENT_USER.partner`). Portal React compilat i verificat.
 
 **Pendents (per ordre del plan §8):**
-- F2: crear col·leccions a Directus (des de l'esquema), rols i permisos, seed de `commission_rules`.
-- F3: auth OTP real (backend) + guard de sessió al router del portal (ara el login naviga a `/`
-  sense verificar sessió — **cal lligar-ho**).
-- F4: lligar el portal a l'API real de Directus (endpoints `/items`, `/auth`).
 - F5: motor de comissions (Flows/extensió) + sync Odoo amb n8n.
 - F6: KPIs, 2FA/robustesa, push PWA.
+- Pendents d'operació: aplicar `schema/03__…` i `schema/04__…`, crear un partner de prova
+  (partners actiu + usuari `partner` + `partner_members`) i `OTP_DEV_REVEAL=true` per provar sense SMTP.
 
 **Primera tasca natural per a l'agent de codi:** arrencar `docker compose up`, aplicar `schema/`
 i re-escriure `portal/src/lib/api.ts` per apuntar a Directus real, i enganxar el guard d'auth al router.

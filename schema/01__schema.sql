@@ -79,10 +79,10 @@ CREATE TABLE partners (
 CREATE TABLE partner_members (
     id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     partner         uuid NOT NULL REFERENCES partners(id) ON DELETE CASCADE,
-    user            uuid NOT NULL,          -- fk directus_users (Directus)
+    "user"          uuid NOT NULL,          -- fk directus_users (Directus); "user" és reservat a PG
     role_in_partner member_role NOT NULL DEFAULT 'viewer',
     created_at      timestamptz NOT NULL DEFAULT now(),
-    UNIQUE (partner, user)
+    UNIQUE (partner, "user")
 );
 
 -- Referit / la venta (el cor del PRM)
@@ -229,7 +229,7 @@ CREATE TABLE notifications (
 CREATE TABLE notification_deliveries (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     notification uuid NOT NULL REFERENCES notifications(id) ON DELETE CASCADE,
-    user         uuid NOT NULL,             -- fk directus_users
+    "user"         uuid NOT NULL,             -- fk directus_users
     delivered_at timestamptz,
     read_at      timestamptz,
     UNIQUE (notification, user)
@@ -268,7 +268,8 @@ CREATE TABLE auth_otps (
     email      text NOT NULL,
     code_hash  text NOT NULL,
     expires_at timestamptz NOT NULL,
-    used       boolean NOT NULL DEFAULT false
+    used       boolean NOT NULL DEFAULT false,
+    created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX idx_otps_email ON auth_otps (email);
 

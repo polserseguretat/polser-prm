@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
-import { getPartnerProfile, type PartnerProfile } from '../lib/api';
+import { useNavigate } from 'react-router-dom';
+import { getMe, getPartnerOrg, type Me, type PartnerOrg } from '../lib/api';
+import { clearToken } from '../lib/session';
 
-const FALLBACK: PartnerProfile = {
+const FALLBACK_ORG: PartnerOrg = {
   id: 'p1',
   name: 'Polser Partners SL',
   profile: 'colaborador',
@@ -34,34 +36,37 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function Profile() {
-  const [profile, setProfile] = useState<PartnerProfile>(FALLBACK);
+  const navigate = useNavigate();
+  const [org, setOrg] = useState<PartnerOrg>(FALLBACK_ORG);
+  const [me, setMe] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const logout = () => {
+    clearToken();
+    navigate('/login', { replace: true });
+  };
 
   useEffect(() => {
     let active = true;
-    getPartnerProfile()
-      .then((res) => {
-        if (active) {
-          setProfile(res.data ?? FALLBACK);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (active) setLoading(false);
-      });
+    Promise.allSettled([getMe(), getPartnerOrg()]).then(([m, o]) => {
+      if (!active) return;
+      if (m.status === 'fulfilled') setMe(m.value.data ?? null);
+      if (o.status === 'fulfilled' && o.value.data?.length) setOrg(o.value.data[0]);
+      setLoading(false);
+    });
     return () => {
       active = false;
     };
   }, []);
 
   const rows: Array<[string, string | undefined]> = [
-    ['Perfil', PROFILE_LABEL[profile.profile] ?? profile.profile],
-    ['Tipus', TYPE_LABEL[profile.type] ?? profile.type],
-    ['NIF / DNI', profile.nif],
-    ['Correu electrònic', profile.email],
-    ['Telèfon', profile.phone],
-    ['Adreça', profile.address],
-    ['Estat', profile.status ? STATUS_LABEL[profile.status] ?? profile.status : undefined],
+    ['Perfil', PROFILE_LABEL[org.profile] ?? org.profile],
+    ['Tipus', TYPE_LABEL[org.type] ?? org.type],
+    ['NIF / DNI', org.nif ?? undefined],
+    ['Correu electrònic', me?.email ?? org.email ?? undefined],
+    ['Telèfon', org.phone ?? undefined],
+    ['Adreça', org.address ?? undefined],
+    ['Estat', org.status ? STATUS_LABEL[org.status] ?? org.status : undefined],
   ];
 
   return (
@@ -72,31 +77,35 @@ export default function Profile() {
       {loading ? (
         <p className="muted">Carregant…</p>
       ) : (
-        <div className="profile-card">
-          <div className="profile-head">
-            <span className="brand-logo" aria-hidden="true">
-              P
-            </span>
-            <div className="profile-head-text">
-              <h2>{profile.name}</h2>
-              <span className="profile-role">
-                {PROFILE_LABEL[profile.profile] ?? profile.profile}
+        <>
+          <div className="profile-card">
+            <div className="profile-head">
+              <span className="brand-logo" aria-hidden="true">
+                P
               </span>
+              <div className="profile-head-text">
+                <h2>{org.name}</h2>
+                <span className="profile-role">{PROFILE_LABEL[org.profile] ?? org.profile}</span>
+              </div>
             </div>
+
+            <dl className="profile-rows">
+              {rows.map(
+                ([label, value]) =>
+                  value && (
+                    <div className="profile-row" key={label}>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ),
+              )}
+            </dl>
           </div>
 
-          <dl className="profile-rows">
-            {rows.map(
-              ([label, value]) =>
-                value && (
-                  <div className="profile-row" key={label}>
-                    <dt>{label}</dt>
-                    <dd>{value}</dd>
-                  </div>
-                ),
-            )}
-          </dl>
-        </div>
+          <button type="button" className="btn btn-ghost btn-block profile-logout" onClick={logout}>
+            Tanca la sessió
+          </button>
+        </>
       )}
     </div>
   );

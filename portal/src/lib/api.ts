@@ -158,3 +158,46 @@ export function getReferral(id: string | number): Promise<{ data: Referral }> {
 export function getWallet(): Promise<WalletData> {
   return request<WalletData>('/items/wallet');
 }
+
+export interface DocumentItem {
+  id: string;
+  title: string;
+  type: string;
+  category: string;
+  version?: string;
+  updated_at?: string;
+  url?: string;
+}
+
+export function getMaterials(): Promise<{ data: DocumentItem[] }> {
+  return request<{ data: DocumentItem[] }>('/items/documents');
+}
+
+export interface NotificationItem {
+  id: string;
+  title: string;
+  body: string;
+  image?: string;
+  created_at?: string;
+  read?: boolean;
+}
+
+export function getNotifications(): Promise<{ data: NotificationItem[] }> {
+  return request<{ data: NotificationItem[] }>('/items/notifications');
+}
+
+export interface PartnerProfile {
+  id: string;
+  name: string;
+  profile: string;
+  type: string;
+  nif?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  status?: string;
+}
+
+export function getPartnerProfile(): Promise<{ data: PartnerProfile }> {
+  return request<{ data: PartnerProfile }>('/items/partners/me');
+}

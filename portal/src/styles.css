@@ -692,6 +692,221 @@ textarea {
   color: var(--red);
 }
 
+/* ---------- Materials ---------- */
+
+.material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.material-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.material-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.material-info strong {
+  font-size: 15px;
+  color: var(--navy);
+}
+
+.material-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.material-version {
+  font-size: 12px;
+  color: var(--gray);
+  font-weight: 600;
+}
+
+.material-date {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.material-soon {
+  font-size: 12px;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+.badge-contracte {
+  background: #eef3fb;
+  color: var(--navy);
+}
+
+.badge-material {
+  background: #fff8ef;
+  color: var(--orange);
+}
+
+.badge-manual {
+  background: #e9f8ef;
+  color: var(--green);
+}
+
+.badge-acord {
+  background: #f3eefb;
+  color: #6d28d9;
+}
+
+/* ---------- Notificacions ---------- */
+
+.notif-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.notif-item.unread {
+  border-color: var(--orange);
+  background: #fffaf5;
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.notif-item.unread .notif-dot {
+  background: var(--orange);
+}
+
+.notif-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.notif-body strong {
+  font-size: 14px;
+  color: var(--navy);
+}
+
+.notif-body p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.notif-body > span {
+  font-size: 12px;
+  color: var(--gray);
+}
+
+.notif-action {
+  margin-left: auto;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.notif-unread-count {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- Perfil ---------- */
+
+.profile-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-head-text h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--navy);
+}
+
+.profile-role {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--orange);
+}
+
+.profile-rows {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-row:last-child {
+  border-bottom: none;
+}
+
+.profile-row dt {
+  font-size: 13px;
+  color: var(--gray);
+}
+
+.profile-row dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+}
+
 /* ---------- Escriptori ---------- */
 
 @media (min-width: 768px) {

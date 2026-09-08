@@ -6,6 +6,9 @@ import Referrals from './pages/Referrals';
 import ReferralNew from './pages/ReferralNew';
 import ReferralDetail from './pages/ReferralDetail';
 import Wallet from './pages/Wallet';
+import Materials from './pages/Materials';
+import Notifications from './pages/Notifications';
+import Profile from './pages/Profile';
 
 export default function App() {
   return (
@@ -17,6 +20,9 @@ export default function App() {
         <Route path="/referrals/new" element={<ReferralNew />} />
         <Route path="/referrals/:id" element={<ReferralDetail />} />
         <Route path="/wallet" element={<Wallet />} />
+        <Route path="/materials" element={<Materials />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/profile" element={<Profile />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

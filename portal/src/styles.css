@@ -18,6 +18,10 @@ html,
 body {
   margin: 0;
   padding: 0;
+  height: 100%;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -25,10 +29,12 @@ body {
   background: var(--bg);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
 }
 
 #root {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 a {
@@ -58,6 +64,7 @@ button:focus-visible,
 
 .app-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
@@ -552,6 +559,7 @@ button:focus-visible,
 
 .login {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;

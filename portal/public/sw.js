@@ -1,5 +1,5 @@
 /* Service Worker — cache-first app shell per a POLSER Portal Partners */
-const CACHE_NAME = 'polser-partners-v1';
+const CACHE_NAME = 'polser-partners-v2';
 const APP_SHELL = ['./', './index.html', './manifest.webmanifest'];
 
 // Instal·la el service worker i cacheja l'app shell
@@ -30,7 +30,7 @@ self.addEventListener('fetch', (event) => {
   // No interceptem crides a l'API Directus
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/items/') || url.pathname.startsWith('/auth/')) return;
+  if (url.pathname.startsWith('/items/') || url.pathname.startsWith('/auth/') || url.pathname.startsWith('/portal/')) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
